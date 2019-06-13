@@ -1,250 +1,146 @@
 import React, { PureComponent } from 'react'
+import ReactDOM from 'react-dom'
 import { Treebeard } from 'react-treebeard'
 import design from '../themes/treeViewTheme'
-import {Button, TextField, Checkbox, Grid} from '@material-ui/core'
-import '../interface/handler'
-import Editor from './Editor'
-import { mockHandlerGet, handlerDelete, handlerPut, handlerGet, handlerMove } from '../interface/handler';
+
+const data = {
+  id: 1,
+  name: 'root',
+  toggled: true,
+  children: [
+    {
+      id: 2,
+      name: 'parent',
+      children: [
+        { id: 3,
+          name: 'child1' },
+        { id: 4,
+          name: 'child2' }
+      ]
+    },
+    {
+      id: 5,
+      name: 'loading parent',
+      loading: true,
+      children: []
+    },
+    {
+      id: 898,
+      name: 'parent',
+      children: [
+        {
+          id: 7,
+          name: 'nested parent',
+          children: [
+            {
+              id: 8,
+              name: 'nested child 1' },
+            { id: 9,
+              name: 'nested child 2' }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
 export default class TreeView extends PureComponent {
   constructor (props) {
-    const res = mockHandlerGet('all')
-    addIdToData(res)
-
     super(props)
     this.state = {
-      data: res,
+      data,
       isFolder: false,
-      nodeName: '',
-      changeName: '',
-      editorFileId: 'x',
-      editorText: ''
+      nodeName: ''
      }
+    this.onToggle = this.onToggle.bind(this)
+    this.handleDelete = this.handleDelete.bind(this)
   }
 
-  //-Clicked Something-------------------------
-  onToggle = (node, toggled) => {
+  onToggle (node, toggled) {
     const { cursor, data } = this.state
     if (cursor) {
       // this.setState(() => ({cursor, active: false})) doesn't work
       if (node.id !== data.id && data.active === true) {
-        data.active = false // for root 
+        data.active = false
       }
       cursor.active = false
     }
-
     node.active = true
     if (node.children) {
       node.toggled = toggled
     }
-    // saves last clicked node in current
     this.setState(() => ({ cursor: node, data: Object.assign({}, data) }))
-    
-    if(!node.children)
-      this.displayNode(node.id, node.content)
   }
 
-  //-HELPER FUNKTIONS-------------------------
-  handleChange = (event) =>  {
-    const { name, value, type, checked } = event.target
-    type === 'checkbox' ? this.setState({ [value]: checked }) : this.setState({ [name]: value })
+  handleDelete (event) {
+    let id = this.state.cursor.id
+    this.findItem(id, this.state.data)
+    this.setState(() => ({ data: Object.assign({}, this.state.data) }))
   }
 
-  displayNode(id, content){
-    //const res = mockHandlerGet(id.toString())
-    this.setState({
-      editorFileId: id,
-      editorText: content + ' ' + id
-    })
-  }
-
-  findNode(parents, node){
-    let res = node
-    parents.forEach( element => {
-      res = res.children[element]
-    })
-    return res
-  }
-
-  //-HANDLERS---------------------------------
-  handleDelete = (event) => {
-    const {data, cursor, editorFileId, editorText} = this.state
-    if(!cursor) return
-
-    const currentId = cursor.id.toString()
-    const parents = currentId.split(':')
-    parents.shift()
-    parents.pop()
-
-    const parentNode = this.findNode(parents, data)
-    parentNode.children.forEach((element, index) => {
-      if (element.id === currentId){
-        parentNode.children.splice(index, 1)
-
-        const newEditorText = editorFileId.includes(cursor.id.toString()) ? '' : editorText
-        addIdToData(data)
-
-        this.setState(() => ({ 
-          data: Object.assign({}, data),
-          editorText: newEditorText
-        }))
-        
-        console.log('TODO: Send Delete')
-        //handlerDelete(cursor)
+  findItem (id, subtree, node) {
+    if (subtree.children == null) {
+      return
+    }
+    let children = subtree.children
+    for (let i = 0; i < children.length; i++) {
+      if (children[i].id === id) {
+        subtree.children.splice(i, 1)
+        return
+      } else {
+        this.findItem(id, children[i])
       }
-    })
+    }
   }
 
   handleAdd = () => {
     const {cursor, data, nodeName, isFolder} = this.state
-    if(nodeName === '') return
-
-    const node = {name: nodeName}
+    //Generating the new node and resetting input
+    if(nodeName === '')
+      return
+    const node = {
+      name: nodeName,
+      id: Math.random() //For now: Just to stop Treebeard from giving off warnings
+    }
     if(isFolder === true)
       node.children = []
-
     this.setState({nodeName: '', isFolder: false})
 
     //Adding node to data
     if(cursor && cursor.children){
-        node.id = cursor.id + ':' + cursor.children.length
         cursor.children.push(node)
+        // const cursorCopy = Object.assign({}, cursor) -- doesn't update the actual node in state.data
+        // cursorCopy.children.push(node) 
+        // this.setState({cursor: cursorCopy})
     } else if (cursor && !cursor.children) {
-      const parents = cursor.id.split(':')
-      parents.shift()
-      parents.pop()
-
-      const parentNode = this.findNode(parents, data)
-
-      node.id = parentNode.id + ':' + parentNode.children.length
-      parentNode.children.push(node)
+      // find parent node
+      // add node to parent.children
     }
-
-    console.log('TODO:Send Put')
-    //handlerPut(node)
-    
   }
 
-  handleChangeNodeName = (event) => {
-    const {cursor, changeName} = this.state
-    if(!cursor || cursor.name === changeName) return
-
-    cursor.name = changeName
-    this.setState({changeName: ''})
-
-    console.log('TODO:Send Put')
-    //handlerPut(cursor)
+  handleChange = (event) =>  {
+    const { name, value, type, checked } = event.target
+    type === 'checkbox' ? this.setState({ [name]: checked }) : this.setState({ [name]: value })
   }
 
-  handleSaveFile = (newText) => {
-    const {cursor} = this.state
-    cursor.content = newText
-    console.log('TODO: Send Put')
-    // if(editorFileId !== '')
-    //   const idToString = editorFileId.toString()
-    // const parents = idToString.splice(':')
-    //handlerPut()
-  }
-  
-  onClickHandle = (event) => {
-    console.log('clickKlick')
-  }
-  onClickHandle = (event) => {
-    console.log('clickContext')
-  }
-  onTestContext2 = (event) => {
-    console.log('clickContextzwei')
-    console.log(event)
-    console.log(event.target)
-  }
-
-  //-RENDER
   render () {
     return (
-      <Grid container justify='center' spacing={2}>
-      <Grid item xs={6}>
-        {
-          //div was just to test out what kind of event comes back from event
-        }
-        <div onContextMenu={this.onTestContext2}> 
-      <Treebeard
+      <div>
+        <Treebeard
           data={this.state.data}
           onToggle={this.onToggle}
           style={design}
-          onClick={this.onClickHandle} //won't work
-          onContextMenu={this.onTestContext} //won'r work either
         />
-        </div>
-        <br/>
         <form>
-          <Grid container direction='row' alignItems='center' spacing={1}>
-            <Grid item xs={12}>
-              <Button 
-              variant='outlined' 
-              color='primary' 
-              onClick={this.handleDelete}>
-              Delete Node
-              </Button>
-            </Grid>
-
-            <Grid item xs={6}>
-              <TextField  
-              label={<p>New Name</p>} 
-              variant='outlined' 
-              margin='normal' 
-              name='nodeName' 
-              value={this.state.nodeName} 
-              onChange={this.handleChange}
-              />
-            </Grid>
-
-            <Grid>
-              <Checkbox
-                value='isFolder'
-                type='checkbox'
-                disableRipple={true}
-                checked={this.state.isFolder}
-                onChange={this.handleChange}
-              />
-            </Grid>
-
-            <Grid item>
-              <Button variant='outlined' color='primary' onClick={this.handleAdd}>Add Node</Button>
-            </Grid>
-
-            <Grid item xs={6}>
-              <TextField label={<p>Name to Change</p>} margin='normal' variant='outlined' name='changeName' value={this.state.changeName} onChange={this.handleChange} />
-            </Grid>
-
-            <Grid item>
-              <Button variant='outlined' color='primary' onClick={this.handleChangeNodeName}>Change Name</Button>
-            </Grid>
-          </Grid>
+          <input type='button' value='Delete' onClick={this.handleDelete} />
+          <br />
+          <input type='textfield' name='nodeName' value={this.state.nodeName} onChange={this.handleChange} />
+          <input type='button' value='Add' onClick={this.handleAdd} />
+          <input type='checkbox' name='isFolder' checked={this.state.isFolder} onChange={this.handleChange} />
         </form>
-      </Grid>
-      <Grid item xs={6}>
-        <Editor editorText={this.state.editorText} saveText={this.handleSaveFile}/>
-      </Grid>
-    </Grid>
 
-
+      </div>
 
     )
-  }
-}
-
-//-HELPER FUNKTION-------------------------
-function addIdToData (node, parentName) {
-  // Id of Root shall be 0
-  if (!parentName) {
-    node.id = 0
-    parentName = 0
-  }
-  // adding id to each child as parentId:childIndex
-  if (node.children) {
-    node.children.forEach((element, index) => {
-      element.id = parentName + ':' + index
-      addIdToData(element, element.id)
-    })
   }
 }
