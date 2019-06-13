@@ -1,8 +1,5 @@
-import React, { PureComponent } from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom'
-import { Treebeard } from 'react-treebeard'
-import customTheme from './themes/design'
-import { displayTree } from './tree.js'
-import { displayTicTacToe } from './tictactoe.js'
+import TreeView from './components/TreeView'
 
-displayTree()
+ReactDOM.render(<TreeView />, document.getElementById('root'))
