@@ -2,10 +2,10 @@ export default {
   tree: {
     base: {
       listStyle: 'none',
-      backgroundColor: '#21252B',
+      backgroundColor: '#f9f7d9',
       margin: 0,
       padding: 0,
-      color: '#9DA5AB',
+      color: '#fffded',
       fontFamily: 'lucida grande ,tahoma,verdana,arial,sans-serif',
       fontSize: '14px'
     },
@@ -20,7 +20,7 @@ export default {
         display: 'block'
       },
       activeLink: {
-        background: '#31363F'
+        background: '#dfe0aa'
       },
       toggle: {
         base: {
