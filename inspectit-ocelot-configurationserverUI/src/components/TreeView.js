@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react'
 import ReactDOM from 'react-dom'
 import { Treebeard } from 'react-treebeard'
 import design from '../themes/treeViewTheme'
+import {Button, TextField} from '@material-ui/core'
 
 const data = {
   id: 1,
@@ -43,14 +44,30 @@ const data = {
     }
   ]
 }
+function addIdToData(node, parentName){
+  // Id of Root shall be 0
+  if(!parentName) {
+    node.id = 0
+    parentName = 0
+  }
+  // adding id to each child as parentId:childIndex
+  if (node.children){
+    node.children.forEach((element, index) => {
+      element.id = parentName + ':' + index
+      addIdToData(element, element.id)
+    })
+  }
+}
 
 export default class TreeView extends PureComponent {
   constructor (props) {
     super(props)
+    addIdToData(data)
     this.state = {
       data,
       isFolder: false,
-      nodeName: ''
+      nodeName: '',
+      changeName: ''
      }
     this.onToggle = this.onToggle.bind(this)
     this.handleDelete = this.handleDelete.bind(this)
@@ -78,7 +95,7 @@ export default class TreeView extends PureComponent {
     this.setState(() => ({ data: Object.assign({}, this.state.data) }))
   }
 
-  findItem (id, subtree, node) {
+  findItem (id, subtree) {
     if (subtree.children == null) {
       return
     }
@@ -100,7 +117,6 @@ export default class TreeView extends PureComponent {
       return
     const node = {
       name: nodeName,
-      id: Math.random() //For now: Just to stop Treebeard from giving off warnings
     }
     if(isFolder === true)
       node.children = []
@@ -108,19 +124,38 @@ export default class TreeView extends PureComponent {
 
     //Adding node to data
     if(cursor && cursor.children){
+        node.id = cursor.id + ':' + cursor.children.length
         cursor.children.push(node)
         // const cursorCopy = Object.assign({}, cursor) -- doesn't update the actual node in state.data
         // cursorCopy.children.push(node) 
         // this.setState({cursor: cursorCopy})
     } else if (cursor && !cursor.children) {
-      // find parent node
-      // add node to parent.children
+      const parents = cursor.id.split(':')
+      parents.shift()
+      parents.pop()
+      const parentNode = this.findNode(parents, data)
+      node.id = parentNode.id + ':' + parentNode.children.length
+      parentNode.children.push(node)
     }
+  }
+
+  findNode(parents, node){
+    let res = node
+    parents.forEach( element => {
+      res = res.children[element]
+    })
+    return res
   }
 
   handleChange = (event) =>  {
     const { name, value, type, checked } = event.target
     type === 'checkbox' ? this.setState({ [name]: checked }) : this.setState({ [name]: value })
+  }
+
+  handleChangeNodeName = (event) => {
+    const {cursor, changeName} = this.state
+    cursor.name = changeName
+    this.setState({changeName: ''})
   }
 
   render () {
@@ -131,12 +166,22 @@ export default class TreeView extends PureComponent {
           onToggle={this.onToggle}
           style={design}
         />
+        <br/>
         <form>
-          <input type='button' value='Delete' onClick={this.handleDelete} />
-          <br />
-          <input type='textfield' name='nodeName' value={this.state.nodeName} onChange={this.handleChange} />
-          <input type='button' value='Add' onClick={this.handleAdd} />
-          <input type='checkbox' name='isFolder' checked={this.state.isFolder} onChange={this.handleChange} />
+          <Button variant='outlined' color='primary' onClick={this.handleDelete}>Delete Node</Button>
+          {/* <input type='button' value='Delete' onClick={this.handleDelete} /> */}
+        <br />
+          <TextField  label={<p>New Name</p>} variant='outlined' name='nodeName' value={this.state.nodeName} onChange={this.handleChange}/>
+          {/* <input type='textfield' name='nodeName' value={this.state.nodeName} onChange={this.handleChange} /> */}
+          <TextField  variant='filled' name='isFolder' type='checkbox' value={this.state.isFolder} onChange={this.handleChange}/>
+          {/* <input type='checkbox' name='isFolder' checked={this.state.isFolder} onChange={this.handleChange} /> */}
+          <Button variant='outlined' color='primary' onClick={this.handleAdd}>Add Node</Button>
+          {/* <input type='button' value='Add' onClick={this.handleAdd} /> */}
+        <br/>
+          <TextField label={<p>Name to Change</p>}variant='outlined' name='changeName' value={this.state.changeName} onChange={this.handleChange} />
+          {/* <input type='textfield' name='changeName' value={this.state.changeName} onChange={this.handleChange} /> */}
+          <Button variant='outlined' color='primary' onClick={this.handleChangeNodeName}>Change Name</Button>
+          {/* <input type='button' value='Change Name' onClick={this.handleChangeNodeName} /> */}
         </form>
 
       </div>
