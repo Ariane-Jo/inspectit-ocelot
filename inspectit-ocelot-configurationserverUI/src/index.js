@@ -1,5 +1,15 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { Container, Typography } from '@material-ui/core'
 import TreeView from './components/TreeView'
 
-ReactDOM.render(<TreeView />, document.getElementById('root'))
+function App () {
+  return (
+    <Container maxWidth='sm'>
+      <Typography align='center'>Hallo</Typography>
+      <TreeView />
+    </Container>
+  )
+}
+
+ReactDOM.render(<App />, document.getElementById('root'))
