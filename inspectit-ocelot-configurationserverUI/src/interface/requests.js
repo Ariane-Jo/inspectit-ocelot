@@ -1,6 +1,7 @@
-function requestGetData (fileName) {
-  // string could be all or a specific file name I suppose? Porbably depends on the server
-  if (fileName === 'all') {
+function requestGET (source) {
+  // source = source of file
+  // TODO: Replace Mocking Data
+  if (source === 'all') {
     return {
       id: 1,
       name: 'root',
@@ -43,18 +44,21 @@ function requestGetData (fileName) {
     }
   } else {
     // Suche nach file
-    return { name: fileName, text: 'Pretending to find something' }
+    return { name: source, text: `${source} : Pretending to find something` }
   }
 }
 
-function requestSave (fileName) {
-  // Could be new folder, file or saving content of a file
-  // = update or add
+function requestPUT (source) {
+  // TODO: Replace Mocking Data
 }
 
 // checking if file exists beforehand?
-function requestDelete (fileName) {
-  // Could be folder or file
+function requestDELETE (source) {
+  // TODO: Replace Mocking Data
 }
 
-export { requestGetData }
+function requestMOVE (oldSource, newSource) {
+  // TODO: Replace Mocking Data
+}
+
+export { requestGET, requestPUT, requestDELETE, requestMOVE }
