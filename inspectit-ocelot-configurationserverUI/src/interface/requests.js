@@ -1,5 +1,6 @@
-function mockingGet (path) {
-  if (path === 'all') {
+function requestGetData (fileName) {
+  // string could be all or a specific file name I suppose? Porbably depends on the server
+  if (fileName === 'all') {
     return {
       id: 1,
       name: 'root',
@@ -10,11 +11,9 @@ function mockingGet (path) {
           name: 'parent',
           children: [
             { id: 3,
-              name: 'child1',
-              content: 'Text for child 1' },
+              name: 'child1' },
             { id: 4,
-              name: 'child2',
-              content: 'Text for child 2' }
+              name: 'child2' }
           ]
         },
         {
@@ -33,11 +32,9 @@ function mockingGet (path) {
               children: [
                 {
                   id: 8,
-                  name: 'nested child 1',
-                  content: 'Text for child 3' },
+                  name: 'nested child 1' },
                 { id: 9,
-                  name: 'nested child 2',
-                  content: 'Text for child 4' }
+                  name: 'nested child 2' }
               ]
             }
           ]
@@ -46,123 +43,18 @@ function mockingGet (path) {
     }
   } else {
     // Suche nach file
-    return { name: path, text: `${path} : Pretending to find something` }
+    return { name: fileName, text: 'Pretending to find something' }
   }
 }
 
-// Authorization for testing: admin:admin
-function requestGET (path, auth) {
-  // super simple error handling for now
-  if (!path.includes('localhost:8090/api/v1/')) {
-    console.log(`Path: ${path} is definitely wrong`)
-    return
-  }
-
-  // includes data for request
-  const data = {
-    headers: new Headers({
-      'Authorization': `Basic ${window.btoa(`${auth.login}:${auth.password}`)}`
-    })
-  }
-  // actual request to server
-  let res = window.fetch(path, data)
-    .then(handleErrors)
-    .then(res => console.log(res))
-    .catch(error => console.log(error))
-
-  /* Outcome
-    [
-    {
-        "type": "file",
-        "path": "file2"
-    },
-    {
-        "type": "directory",
-        "path": "test"
-    },
-    {
-        "type": "directory",
-        "path": "test/abc"
-    }
-    ]
-    */
-
-  // returns promise
-  return res
+function requestSave (fileName) {
+  // Could be new folder, file or saving content of a file
+  // = update or add
 }
 
-function requestPUT (path, auth, content) {
-  if (!path.includes('localhost:8090/api/v1/')) {
-    console.log(`Path: ${path} is definitely wrong`)
-    return
-  }
-
-  // path already includes directory/file name ---
-  // TODO: is body.text right?
-  // TODO: Checking if sending content for directories result in a problem (works in postman)
-  const data = {
-    method: 'PUT',
-    body: JSON.stringify({ text: content }),
-    headers: new Headers({
-      'Authorization': `Basic ${window.btoa(`${auth.login}:${auth.password}`)}`
-    })
-  }
-
-  let res = window.fetch(path, data)
-    .then(handleErrors)
-    .then(res => console.log(res))
-    .catch(error => console.log(error))
-
-  return res
+// checking if file exists beforehand?
+function requestDelete (fileName) {
+  // Could be folder or file
 }
 
-function requestDELETE (path, auth) {
-  if (!path.includes('localhost:8090/api/v1/')) {
-    console.log(`Path: ${path} is definitely wrong`)
-    return
-  }
-
-  const data = {
-    method: 'DELETE',
-    headers: new Headers({
-      'Authorization': `Basic ${window.btoa(`${auth.login}:${auth.password}`)}`
-    })
-  }
-
-  let res = window.fetch(path, data)
-    .then(handleErrors)
-    .then(res => console.log(res))
-    .catch(error => console.log(error))
-
-  return res
-}
-
-// TODO: Looking up how request should look like
-function requestMOVE (oldPath, newPath, auth) {
-  if (!oldPath.includes('localhost:8090/api/v1/') || !newPath.includes('localhost:8090/api/v1/')) {
-    console.log(`Path: ${oldPath} or ${newPath} is definitely wrong`)
-    return
-  }
-
-  const data = {
-    method: 'DELETE',
-    body: JSON.stringify({ newPath: newPath }),
-    headers: new Headers({
-      'Authorization': `Basic ${window.btoa(`${auth.login}:${auth.password}`)}`
-    })
-  }
-
-  let res = window.fetch(oldPath, data)
-    .then(handleErrors)
-    .then(res => console.log(res))
-    .catch(error => console.log(error))
-
-  return res
-}
-
-function handleErrors (res) {
-  if (res.ok) return res.json()
-  else return Error(res.statusText)
-}
-
-export { mockingGet, requestGET, requestPUT, requestDELETE, requestMOVE }
+export { requestGetData }

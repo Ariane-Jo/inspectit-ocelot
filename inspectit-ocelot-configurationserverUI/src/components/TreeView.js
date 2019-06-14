@@ -1,70 +1,14 @@
 import React, { PureComponent } from 'react'
-import ReactDOM from 'react-dom'
 import { Treebeard } from 'react-treebeard'
 import design from '../themes/treeViewTheme'
-import {Button, TextField} from '@material-ui/core'
-
-const data = {
-  id: 1,
-  name: 'root',
-  toggled: true,
-  children: [
-    {
-      id: 2,
-      name: 'parent',
-      children: [
-        { id: 3,
-          name: 'child1' },
-        { id: 4,
-          name: 'child2' }
-      ]
-    },
-    {
-      id: 5,
-      name: 'loading parent',
-      loading: true,
-      children: []
-    },
-    {
-      id: 898,
-      name: 'parent',
-      children: [
-        {
-          id: 7,
-          name: 'nested parent',
-          children: [
-            {
-              id: 8,
-              name: 'nested child 1' },
-            { id: 9,
-              name: 'nested child 2' }
-          ]
-        }
-      ]
-    }
-  ]
-}
-function addIdToData(node, parentName){
-  // Id of Root shall be 0
-  if(!parentName) {
-    node.id = 0
-    parentName = 0
-  }
-  // adding id to each child as parentId:childIndex
-  if (node.children){
-    node.children.forEach((element, index) => {
-      element.id = parentName + ':' + index
-      addIdToData(element, element.id)
-    })
-  }
-}
+import {Button, TextField, Checkbox, Grid} from '@material-ui/core'
+import {handlerGet} from '../interface/handler'
 
 export default class TreeView extends PureComponent {
   constructor (props) {
     super(props)
-    addIdToData(data)
     this.state = {
-      data,
+      data: handlerGet('all'),
       isFolder: false,
       nodeName: '',
       changeName: ''
@@ -149,7 +93,7 @@ export default class TreeView extends PureComponent {
 
   handleChange = (event) =>  {
     const { name, value, type, checked } = event.target
-    type === 'checkbox' ? this.setState({ [name]: checked }) : this.setState({ [name]: value })
+    type === 'checkbox' ? this.setState({ [value]: checked }) : this.setState({ [name]: value })
   }
 
   handleChangeNodeName = (event) => {
@@ -168,20 +112,49 @@ export default class TreeView extends PureComponent {
         />
         <br/>
         <form>
-          <Button variant='outlined' color='primary' onClick={this.handleDelete}>Delete Node</Button>
-          {/* <input type='button' value='Delete' onClick={this.handleDelete} /> */}
-        <br />
-          <TextField  label={<p>New Name</p>} variant='outlined' name='nodeName' value={this.state.nodeName} onChange={this.handleChange}/>
-          {/* <input type='textfield' name='nodeName' value={this.state.nodeName} onChange={this.handleChange} /> */}
-          <TextField  variant='filled' name='isFolder' type='checkbox' value={this.state.isFolder} onChange={this.handleChange}/>
-          {/* <input type='checkbox' name='isFolder' checked={this.state.isFolder} onChange={this.handleChange} /> */}
-          <Button variant='outlined' color='primary' onClick={this.handleAdd}>Add Node</Button>
-          {/* <input type='button' value='Add' onClick={this.handleAdd} /> */}
-        <br/>
-          <TextField label={<p>Name to Change</p>}variant='outlined' name='changeName' value={this.state.changeName} onChange={this.handleChange} />
-          {/* <input type='textfield' name='changeName' value={this.state.changeName} onChange={this.handleChange} /> */}
-          <Button variant='outlined' color='primary' onClick={this.handleChangeNodeName}>Change Name</Button>
-          {/* <input type='button' value='Change Name' onClick={this.handleChangeNodeName} /> */}
+          <Grid container direction='row' alignItems='center' spacing={1}>
+            <Grid item xs={12}>
+              <Button 
+              variant='outlined' 
+              color='primary' 
+              onClick={this.handleDelete}>
+              Delete Node
+              </Button>
+            </Grid>
+
+            <Grid item xs={6}>
+              <TextField  
+              label={<p>New Name</p>} 
+              variant='outlined' 
+              margin='normal' 
+              name='nodeName' 
+              value={this.state.nodeName} 
+              onChange={this.handleChange}
+              />
+            </Grid>
+
+            <Grid>
+              <Checkbox
+                value='isFolder'
+                type='checkbox'
+                disableRipple={true}
+                checked={this.state.isFolder}
+                onChange={this.handleChange}
+              />
+            </Grid>
+
+            <Grid item>
+              <Button variant='outlined' color='primary' onClick={this.handleAdd}>Add Node</Button>
+            </Grid>
+
+            <Grid item xs={6}>
+              <TextField label={<p>Name to Change</p>} margin='normal' variant='outlined' name='changeName' value={this.state.changeName} onChange={this.handleChange} />
+            </Grid>
+
+            <Grid item>
+              <Button variant='outlined' color='primary' onClick={this.handleChangeNodeName}>Change Name</Button>
+            </Grid>
+          </Grid>
         </form>
 
       </div>
