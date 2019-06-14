@@ -1,13 +1,20 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Container, Typography } from '@material-ui/core'
+import { Container, Grid } from '@material-ui/core'
 import TreeView from './components/TreeView'
+import Editor from './components/Editor'
 
 function App () {
   return (
-    <Container maxWidth='sm'>
-      <Typography align='center'>Hallo</Typography>
-      <TreeView />
+    <Container maxWidth='xl'>
+      <Grid container justify='center' spacing={2}>
+        <Grid item xs={6}>
+          <TreeView />
+        </Grid>
+        <Grid item xs={6}>
+          <Editor />
+        </Grid>
+      </Grid>
     </Container>
   )
 }
