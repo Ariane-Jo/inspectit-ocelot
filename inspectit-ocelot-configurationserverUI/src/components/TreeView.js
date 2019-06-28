@@ -4,7 +4,7 @@ import design from '../themes/treeViewTheme'
 import {Button, TextField, Checkbox, Grid} from '@material-ui/core'
 import '../interface/handler'
 import Editor from './Editor'
-import { handlerDelete, handlerPut } from '../interface/handler';
+import { handlerDelete, handlerPut, handlerGet, handlerMove } from '../interface/handler';
 
 export default class TreeView extends PureComponent {
   constructor (props) {
@@ -133,7 +133,7 @@ export default class TreeView extends PureComponent {
     this.setState({changeName: ''})
 
     console.log('TODO:Send Put')
-    handlerPut(node)
+    handlerPut(cursor)
   }
 
   handleSaveFile = (newText) => {
