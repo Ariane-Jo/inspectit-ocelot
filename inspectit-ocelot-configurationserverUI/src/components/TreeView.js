@@ -4,11 +4,11 @@ import design from '../themes/treeViewTheme'
 import {Button, TextField, Checkbox, Grid} from '@material-ui/core'
 import '../interface/handler'
 import Editor from './Editor'
-import { handlerDelete, handlerPut, handlerGet, handlerMove } from '../interface/handler';
+import { mockHandlerGet, handlerDelete, handlerPut, handlerGet, handlerMove } from '../interface/handler';
 
 export default class TreeView extends PureComponent {
   constructor (props) {
-    const res = handlerGet('all')
+    const res = mockHandlerGet('all')
     addIdToData(res)
 
     super(props)
@@ -51,7 +51,7 @@ export default class TreeView extends PureComponent {
   }
 
   displayNode(id){
-    const res = handlerGet(id.toString())
+    const res = mockHandlerGet(id.toString())
     this.setState({
       editorFileId: id,
       editorText: res.text

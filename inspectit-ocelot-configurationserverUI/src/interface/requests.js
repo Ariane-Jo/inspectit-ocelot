@@ -1,7 +1,5 @@
-function requestGET (source) {
-  // source = source of file
-  // TODO: Replace Mocking Data
-  if (source === 'all') {
+function mockingGet (path) {
+  if (path === 'all') {
     return {
       id: 1,
       name: 'root',
@@ -44,40 +42,16 @@ function requestGET (source) {
     }
   } else {
     // Suche nach file
-    return { name: source, text: `${source} : Pretending to find something` }
+    return { name: path, text: `${path} : Pretending to find something` }
   }
+}
 
-  // // Get for all
-  // window.fetch('PlaceholderFILESORFOLDERS')
-  //   .then(handleErrors)
-  //   .then(res => console.log(res))
-  //   .catch(error => console.log(error))
+function requestGET (path) {
+  let res = window.fetch('http://localhost:8090/api/v1/directories')
+    .then(handleErrors)
+    .catch(error => console.log(error))
 
-  // // Get for a file
-  // const data = {
-  //   method: 'GET',
-  //   body: JSON.stringify({ filename: inputFilename }),
-  //   headers: {
-  //    'Content-Type': 'application/json'
-  //   }
-  // }
-  // window.fetch('Placeholder', data)
-  //   .then(handleErrors)
-  //   .then(res => console.log(res))
-  //   .catch(error => console.log(error))
-
-  // // Get for a folder
-  // const data = {
-  //   method: 'GET',
-  //   body: JSON.stringify({ folderName: inputFoldername }),
-  //   headers: {
-  //     'Content-Type': 'application/json'
-  //   }
-  // }
-  // window.fetch('Placeholder', data)
-  //   .then(handleErrors)
-  //   .then(res => console.log(res))
-  //   .catch(error => console.log(error))
+  return res
 }
 
 function requestPUT (source) {
@@ -161,4 +135,4 @@ function handleErrors (res) {
   else return Error(res.statusText)
 }
 
-export { requestGET, requestPUT, requestDELETE, requestMOVE }
+export { mockingGet, requestGET, requestPUT, requestDELETE, requestMOVE }
