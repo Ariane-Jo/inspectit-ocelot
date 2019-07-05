@@ -37,11 +37,11 @@ export default class TreeView extends PureComponent {
     if (node.children) {
       node.toggled = toggled
     }
-
+    // saves last clicked node in current
     this.setState(() => ({ cursor: node, data: Object.assign({}, data) }))
     
     if(!node.children)
-      this.displayNode(node.id)
+      this.displayNode(node.id, node.content)
   }
 
   //-HELPER FUNKTIONS-------------------------
@@ -50,11 +50,11 @@ export default class TreeView extends PureComponent {
     type === 'checkbox' ? this.setState({ [value]: checked }) : this.setState({ [name]: value })
   }
 
-  displayNode(id){
-    const res = mockHandlerGet(id.toString())
+  displayNode(id, content){
+    //const res = mockHandlerGet(id.toString())
     this.setState({
       editorFileId: id,
-      editorText: res.text
+      editorText: content + ' ' + id
     })
   }
 
@@ -90,7 +90,7 @@ export default class TreeView extends PureComponent {
         }))
         
         console.log('TODO: Send Delete')
-        handlerDelete(cursor)
+        //handlerDelete(cursor)
       }
     })
   }
@@ -121,7 +121,7 @@ export default class TreeView extends PureComponent {
     }
 
     console.log('TODO:Send Put')
-    handlerPut(node)
+    //handlerPut(node)
     
   }
 
@@ -133,16 +133,17 @@ export default class TreeView extends PureComponent {
     this.setState({changeName: ''})
 
     console.log('TODO:Send Put')
-    handlerPut(cursor)
+    //handlerPut(cursor)
   }
 
   handleSaveFile = (newText) => {
-    console.log(newText)
+    const {cursor} = this.state
+    cursor.content = newText
     console.log('TODO: Send Put')
     // if(editorFileId !== '')
     //   const idToString = editorFileId.toString()
     // const parents = idToString.splice(':')
-    handlerPut()
+    //handlerPut()
   }
 
   //-RENDER

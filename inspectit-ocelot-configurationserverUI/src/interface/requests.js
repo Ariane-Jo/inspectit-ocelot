@@ -10,9 +10,11 @@ function mockingGet (path) {
           name: 'parent',
           children: [
             { id: 3,
-              name: 'child1' },
+              name: 'child1',
+              content: 'Text for child 1' },
             { id: 4,
-              name: 'child2' }
+              name: 'child2',
+              content: 'Text for child 2' }
           ]
         },
         {
@@ -31,9 +33,11 @@ function mockingGet (path) {
               children: [
                 {
                   id: 8,
-                  name: 'nested child 1' },
+                  name: 'nested child 1',
+                  content: 'Text for child 3' },
                 { id: 9,
-                  name: 'nested child 2' }
+                  name: 'nested child 2',
+                  content: 'Text for child 4' }
               ]
             }
           ]
@@ -46,88 +50,98 @@ function mockingGet (path) {
   }
 }
 
-function requestGET (path) {
-  let res = window.fetch('http://localhost:8090/api/v1/directories')
+// Authorization for testing: admin:admin
+function requestGET (path, auth) {
+  // super simple error handling for now
+  if (!path.includes('localhost:8090/api/v1/')) {
+    console.log(`Path: ${path} is definitely wrong`)
+    return
+  }
+
+  // includes data for request
+  const data = {
+    headers: new Headers({
+      'Authorization': `Basic ${window.btoa(`${auth.login}:${auth.password}`)}`
+    })
+  }
+  // actual request to server
+  let res = window.fetch(path, data)
     .then(handleErrors)
+    .then(res => console.log(res))
+    .catch(error => console.log(error))
+
+  // returns promise
+  return res
+}
+
+// TODO: Authorization needed for getting files
+function requestPUT (path, auth, content) {
+  if (!path.includes('localhost:8090/api/v1/')) {
+    console.log(`Path: ${path} is definitely wrong`)
+    return
+  }
+
+  // path already includes directory/file name ---
+  // TODO: is body.text right?
+  // TODO: Checking if sending context for directories result in a problem (works in postman)
+  const data = {
+    method: 'PUT',
+    body: JSON.stringify({ text: content }),
+    headers: new Headers({
+      'Authorization': `Basic ${window.btoa(`${auth.login}:${auth.password}`)}`
+    })
+  }
+
+  let res = window.fetch(path, data)
+    .then(handleErrors)
+    .then(res => console.log(res))
     .catch(error => console.log(error))
 
   return res
 }
 
-function requestPUT (source) {
-  // TODO: Finish requestPut up
-  // Put for file
-  // const data = {
-  //   method: 'PUT',
-  //   body: JSON.stringify({fileName: inputFileName, text: inputText}),
-  //   headers: {
-  //     'Content-Type': 'application/json'
-  //   }
-  // }
-  // window,fetch('PlaceholderFile', data)
-  //   .then(handleErrors)
-  //   .then(res => console.log(res))
-  //   .catch(error => console.log(error))
+function requestDELETE (path, auth) {
+  if (!path.includes('localhost:8090/api/v1/')) {
+    console.log(`Path: ${path} is definitely wrong`)
+    return
+  }
 
-  // // Put for a folder
-  // const data = {
-  //   method: 'PUT',
-  //   body: JSON.stringify({folderName: inputFolderName}),
-  //   headers: {
-  //     'Content-Type': 'application/json'
-  //   }
-  // }
+  const data = {
+    method: 'DELETE',
+    headers: new Headers({
+      'Authorization': `Basic ${window.btoa(`${auth.login}:${auth.password}`)}`
+    })
+  }
+
+  let res = window.fetch(path, data)
+    .then(handleErrors)
+    .then(res => console.log(res))
+    .catch(error => console.log(error))
+
+  return res
 }
 
-// checking if file exists beforehand?
-function requestDELETE (source) {
-  // TODO: Finish requestDelete up
-  // Delete for file
-  // const data = {
-  //   method: 'DELETE',
-  //   body: JSON.stringify({fileName: inputFileName}),
-  //   headers: {
-  //     'Content-Type': 'application/json'
-  //   }
-  // }
-  // window,fetch('PlaceholderFile', data)
-  //   .then(handleErrors)
-  //   .then(res => console.log(res))
-  //   .catch(error => console.log(error))
+// TODO: Looking up how request should look like
+function requestMOVE (oldPath, newPath, auth) {
+  if (!oldPath.includes('localhost:8090/api/v1/') || !newPath.includes('localhost:8090/api/v1/')) {
+    console.log(`Path: ${oldPath} or ${newPath} is definitely wrong`)
+    return
+  }
 
-  // // Delete for a folder
-  // const data = {
-  //   method: 'DELETE',
-  //   body: JSON.stringify({folderName: inputFolderName}),
-  //   headers: {
-  //     'Content-Type': 'application/json'
-  //   }
-  // }
-}
+  const data = {
+    method: 'DELETE',
+    body: JSON.stringify({ newPath: newPath }),
+    headers: new Headers({
+      'Authorization': `Basic ${window.btoa(`${auth.login}:${auth.password}`)}`
+    })
+  }
 
-function requestMOVE (oldSource, newSource) {
-  // TODO: Finish requestMove up
-  // Moving a file
-  // const data = {
-  //   method: 'Move',
-  //   body: JSON.stringify({fileName: inputFileName, oldSource: oldSource, newSource: newSource}),
-  //   headers: {
-  //     'Content-Type': 'application/json'
-  //   }
-  // }
-  // window,fetch('PlaceholderFile', data)
-  //   .then(handleErrors)
-  //   .then(res => console.log(res))
-  //   .catch(error => console.log(error))
+  let res = window.fetch(oldPath, data)
+    .then(handleErrors)
+    .then(res => console.log(res))
+    .catch(error => console.log(error))
 
-  // // Moving a folder
-  // const data = {
-  //   method: 'PUT',
-  //   body: JSON.stringify({folderName: inputFolderName, oldSource: oldSource, newSource: newSource),
-  //   headers: {
-  //     'Content-Type': 'application/json'
-  //   }
-  // }
+  return res
 }
 
 function handleErrors (res) {
