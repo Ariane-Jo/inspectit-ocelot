@@ -70,11 +70,27 @@ function requestGET (path, auth) {
     .then(res => console.log(res))
     .catch(error => console.log(error))
 
+  /* Outcome
+    [
+    {
+        "type": "file",
+        "path": "file2"
+    },
+    {
+        "type": "directory",
+        "path": "test"
+    },
+    {
+        "type": "directory",
+        "path": "test/abc"
+    }
+    ]
+    */
+
   // returns promise
   return res
 }
 
-// TODO: Authorization needed for getting files
 function requestPUT (path, auth, content) {
   if (!path.includes('localhost:8090/api/v1/')) {
     console.log(`Path: ${path} is definitely wrong`)
@@ -83,7 +99,7 @@ function requestPUT (path, auth, content) {
 
   // path already includes directory/file name ---
   // TODO: is body.text right?
-  // TODO: Checking if sending context for directories result in a problem (works in postman)
+  // TODO: Checking if sending content for directories result in a problem (works in postman)
   const data = {
     method: 'PUT',
     body: JSON.stringify({ text: content }),

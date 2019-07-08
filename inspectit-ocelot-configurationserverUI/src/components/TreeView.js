@@ -145,17 +145,36 @@ export default class TreeView extends PureComponent {
     // const parents = idToString.splice(':')
     //handlerPut()
   }
+  
+  onClickHandle = (event) => {
+    console.log('clickKlick')
+  }
+  onClickHandle = (event) => {
+    console.log('clickContext')
+  }
+  onTestContext2 = (event) => {
+    console.log('clickContextzwei')
+    console.log(event)
+    console.log(event.target)
+  }
 
   //-RENDER
   render () {
     return (
       <Grid container justify='center' spacing={2}>
       <Grid item xs={6}>
+        {
+          //div was just to test out what kind of event comes back from event
+        }
+        <div onContextMenu={this.onTestContext2}> 
       <Treebeard
           data={this.state.data}
           onToggle={this.onToggle}
           style={design}
+          onClick={this.onClickHandle} //won't work
+          onContextMenu={this.onTestContext} //won'r work either
         />
+        </div>
         <br/>
         <form>
           <Grid container direction='row' alignItems='center' spacing={1}>
