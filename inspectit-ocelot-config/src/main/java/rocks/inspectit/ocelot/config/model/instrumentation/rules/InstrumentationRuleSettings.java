@@ -107,6 +107,12 @@ public class InstrumentationRuleSettings {
     private RuleTracingSettings tracing = null;
 
     /**
+     * Stores the information to generate events in key: object values
+     */
+    @NotNull
+    private Map<@NotBlank String, Map<@NotBlank String, Object> > events = Collections.emptyMap();
+
+    /**
      * Validates this rule, invoked by {@link InstrumentationSettings#performValidation(InspectitConfig, ViolationBuilder)}
      *
      * @param container      the root config containing this rule
