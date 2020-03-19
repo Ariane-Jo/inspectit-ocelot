@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 import lombok.experimental.NonFinal;
+import rocks.inspectit.ocelot.config.model.InspectitConfig;
+import rocks.inspectit.ocelot.config.model.events.EventsSettings;
 import rocks.inspectit.ocelot.config.model.instrumentation.InstrumentationSettings;
 import rocks.inspectit.ocelot.config.model.metrics.MetricsSettings;
 import rocks.inspectit.ocelot.config.model.tracing.TracingSettings;
@@ -34,6 +36,13 @@ public class InstrumentationConfiguration {
      * Corresponds to {@link TracingSettings#isEnabled()}
      */
     private boolean tracingEnabled;
+
+    /**
+     * THESIS-TAG: Added eventsEnabled prop. Used within {@link InstrumentationConfigurationResolver}
+     * Corresponds to {@link EventsSettings#isEnabled()}
+     * Even though default is set to true -- due to the boolean value coming it will will be false if the default config is not changed
+     */
+    private boolean eventsEnabled;
 
     /**
      * The instrumentation settings which have been used to derive this configuration.

@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import rocks.inspectit.ocelot.config.model.config.ConfigSettings;
 import rocks.inspectit.ocelot.config.model.env.EnvironmentSettings;
+import rocks.inspectit.ocelot.config.model.events.EventsSettings;
 import rocks.inspectit.ocelot.config.model.exporters.ExportersSettings;
 import rocks.inspectit.ocelot.config.model.instrumentation.InstrumentationSettings;
 import rocks.inspectit.ocelot.config.model.logging.LoggingSettings;
@@ -74,6 +75,13 @@ public class InspectitConfig {
      */
     @Valid
     private TracingSettings tracing = new TracingSettings();
+
+    /**
+     * THESIS-TAG: Added Event Settings.
+     * TODO: Add events default config within config package - resources -> basics.yml default configuration
+     * General event settings.
+     */
+    private EventsSettings events = new EventsSettings();
 
     /**
      * Data protection and privacy settings.

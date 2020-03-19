@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import rocks.inspectit.ocelot.config.model.instrumentation.actions.ConditionalActionSettings;
+import rocks.inspectit.ocelot.config.model.instrumentation.rules.EventRecordingSettings;
 import rocks.inspectit.ocelot.config.model.instrumentation.rules.RuleTracingSettings;
 import rocks.inspectit.ocelot.core.instrumentation.config.callsorting.CyclicDataDependencyException;
 import rocks.inspectit.ocelot.core.instrumentation.config.callsorting.GenericActionCallSorter;
@@ -54,6 +55,13 @@ public class MethodHookConfigurationResolver {
 
         if (allSettings.isTracingEnabled()) {
             resolveTracing(result, matchedRules);
+        }
+
+        /**
+         * THESIS-TAG: Added below: asking if enabled and calling function to resolve events
+         */
+        if(allSettings.isEventsEnabled()) {
+            resolveEvents(result, matchedRules);
         }
 
         return result.build();
@@ -191,6 +199,13 @@ public class MethodHookConfigurationResolver {
         result.metrics(matchedRules.stream()
                 .flatMap(rule -> rule.getMetrics().stream())
                 .collect(Collectors.toCollection(HashMultiset::create)));
+    }
+
+    //THESIS-TAG: events will be put from Map to Set -- similar as in ruleResolver
+    private void resolveEvents(MethodHookConfiguration.MethodHookConfigurationBuilder result, Set<InstrumentationRule> matchedRules) {
+        result.events(matchedRules.stream()
+                .flatMap(rule -> rule.getEvents().stream())
+                .collect(Collectors.toSet()));
     }
 
     /**

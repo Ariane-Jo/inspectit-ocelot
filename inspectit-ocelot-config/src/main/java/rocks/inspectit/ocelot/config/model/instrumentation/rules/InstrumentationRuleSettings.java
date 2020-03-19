@@ -107,10 +107,11 @@ public class InstrumentationRuleSettings {
     private RuleTracingSettings tracing = null;
 
     /**
-     * Stores the information to generate events in key: object values
+     * THESIS-TAG: Added events as a Map
+     * Stores the information to generate events.
      */
     @NotNull
-    private Map<@NotBlank String, Map<@NotBlank String, Object> > events = Collections.emptyMap();
+    private Map<@NotBlank String, @Valid EventRecordingSettings > events = Collections.emptyMap();
 
     /**
      * Validates this rule, invoked by {@link InstrumentationSettings#performValidation(InspectitConfig, ViolationBuilder)}
@@ -123,6 +124,7 @@ public class InstrumentationRuleSettings {
         checkScopesExist(container, vios);
         checkIncludedRulesExist(container, vios);
         checkMetricRecordingsValid(definedMetrics, vios);
+//        checkEventRecordsValid(container, vios);
         preEntry.forEach((data, call) -> call.performValidation(container,
                 vios.atProperty("preEntry").atProperty(data)));
         entry.forEach((data, call) -> call.performValidation(container,
@@ -140,6 +142,13 @@ public class InstrumentationRuleSettings {
     private void checkMetricRecordingsValid(Set<String> definedMetrics, ViolationBuilder vios) {
         metrics.forEach((name, settings) -> settings.performValidation(name, definedMetrics, vios.atProperty("metrics")));
     }
+
+//    private void checkEventRecordsValid(InstrumentationSettings container, ViolationBuilder vios) {
+//        events.forEach((name, settings) -> {
+//            settings.performValidation(container, vios.atProperty("events").atProperty(name));
+//            System.out.println(container.getData());
+//        });
+//    }
 
     private void checkScopesExist(InstrumentationSettings container, ViolationBuilder vios) {
         scopes.entrySet().stream()

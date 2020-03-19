@@ -208,11 +208,16 @@ public class InstrumentationConfigurationResolver {
         }
     }
 
+    /**
+     * THESIS-TAG: Added events enabled tag -> .eventsEnabled(config.getEvents().isEnabled())
+     * even though instrumentation configuration defaults it to true - it will always be false unless set otherwise within the instrumentation - normal or default
+     */
     private InstrumentationConfiguration resolveConfiguration(InspectitConfig config) {
         val genericActions = genericActionConfigurationResolver.resolveActions(config.getInstrumentation());
         return InstrumentationConfiguration.builder()
                 .metricsEnabled(config.getMetrics().isEnabled())
                 .tracingEnabled(config.getTracing().isEnabled())
+                .eventsEnabled(config.getEvents().isEnabled())
                 .tracingSettings(config.getTracing())
                 .source(config.getInstrumentation())
                 .rules(ruleResolver.resolve(config.getInstrumentation(), genericActions))

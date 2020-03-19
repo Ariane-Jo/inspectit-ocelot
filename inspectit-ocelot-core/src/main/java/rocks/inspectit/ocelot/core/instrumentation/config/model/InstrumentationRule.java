@@ -3,10 +3,12 @@ package rocks.inspectit.ocelot.core.instrumentation.config.model;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import lombok.*;
+import rocks.inspectit.ocelot.config.model.instrumentation.rules.EventRecordingSettings;
 import rocks.inspectit.ocelot.config.model.instrumentation.rules.MetricRecordingSettings;
 import rocks.inspectit.ocelot.config.model.instrumentation.rules.RuleTracingSettings;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -90,4 +92,11 @@ public class InstrumentationRule {
      */
     @Builder.Default
     private RuleTracingSettings tracing = RuleTracingSettings.NO_TRACING_AND_ATTRIBUTES;
+
+    /**
+     * THESIS-TAG: Added Events prop
+     * TODO-THESIS: Find out if different equal events & props are put together or not... e.g. declaring evenet_one: [..] twice in two different methods will be merged?
+     */
+    @Builder.Default
+    private Set<EventRecordingSettings> events = Collections.emptySet();
 }

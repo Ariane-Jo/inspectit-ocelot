@@ -5,11 +5,14 @@ import com.google.common.collect.Multiset;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
+import rocks.inspectit.ocelot.config.model.instrumentation.rules.EventRecordingSettings;
 import rocks.inspectit.ocelot.config.model.instrumentation.rules.MetricRecordingSettings;
 import rocks.inspectit.ocelot.config.model.instrumentation.rules.RuleTracingSettings;
 import rocks.inspectit.ocelot.core.instrumentation.hook.MethodHook;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The configuration used to build a {@link MethodHook}
@@ -71,4 +74,9 @@ public class MethodHookConfiguration {
      */
     @Builder.Default
     private Multiset<MetricRecordingSettings> metrics = HashMultiset.create();
+
+
+    //THESIS-TAG: Added events to method hook config
+    @Builder.Default
+    private Set<EventRecordingSettings> events = Collections.emptySet();
 }

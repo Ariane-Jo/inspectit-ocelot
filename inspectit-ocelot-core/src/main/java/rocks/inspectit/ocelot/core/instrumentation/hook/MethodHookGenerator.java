@@ -9,12 +9,14 @@ import net.bytebuddy.description.method.MethodDescription;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import rocks.inspectit.ocelot.config.model.instrumentation.rules.EventRecordingSettings;
 import rocks.inspectit.ocelot.config.model.instrumentation.rules.MetricRecordingSettings;
 import rocks.inspectit.ocelot.config.model.instrumentation.rules.RuleTracingSettings;
 import rocks.inspectit.ocelot.core.instrumentation.config.model.ActionCallConfig;
 import rocks.inspectit.ocelot.core.instrumentation.config.model.MethodHookConfiguration;
 import rocks.inspectit.ocelot.core.instrumentation.context.ContextManager;
 import rocks.inspectit.ocelot.core.instrumentation.hook.actions.ConditionalHookAction;
+import rocks.inspectit.ocelot.core.instrumentation.hook.actions.EventRecordAction;
 import rocks.inspectit.ocelot.core.instrumentation.hook.actions.IHookAction;
 import rocks.inspectit.ocelot.core.instrumentation.hook.actions.MetricsRecorder;
 import rocks.inspectit.ocelot.core.instrumentation.hook.actions.model.MetricAccessor;
@@ -25,6 +27,7 @@ import rocks.inspectit.ocelot.core.privacy.obfuscation.ObfuscationManager;
 import rocks.inspectit.ocelot.core.tags.CommonTagsManager;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
@@ -88,6 +91,7 @@ public class MethodHookGenerator {
             builder.exitActions(buildTracingExitActions(tracingSettings));
         }
         buildMetricsRecorder(config).ifPresent(builder::exitAction);
+        buildEventRecorder(config).isPresent(builder::exitAction);
         builder.exitActions(buildActionCalls(config.getPostExitActions(), methodInfo));
 
         return builder.build();
@@ -205,6 +209,42 @@ public class MethodHookGenerator {
         return new MetricAccessor(metricSettings.getMetric(), valueAccessor, metricSettings.getConstantTags(), tagAccessors);
     }
 
+    /**
+     * THESIS-TAG: Added this function + function call above
+     * generates an IHookAktion of EventRecordingAction
+     */
+    private Optional<IHookAction> buildEventRecorder(MethodHookConfiguration config) {
+        Collection<EventRecordingSettings> events = config.getEvents();
+
+        if(!events.isEmpty()) {
+            Map<String, VariableAccessor> valueAccessors = new HashMap<>();
+
+            for (EventRecordingSettings event : events) {
+                ArrayList<Map> mapList = new ArrayList();
+                mapList.add(event.getAttributes());
+
+                while(!mapList.isEmpty()) {
+                    Map currentMap = mapList.get(0);
+                    Set keys = currentMap.keySet();
+                    for (Object key : keys) {
+                        Object value = currentMap.get(key);
+                        if(value instanceof Map){
+                            mapList.add((Map) value);
+                        } else {
+                            VariableAccessor valueAccessor = variableAccessorFactory.getVariableAccessor(value.toString());
+                            valueAccessors.put(value.toString(), valueAccessor);
+                        }
+                    }
+                    mapList.remove(currentMap);
+                }
+            }
+            EventRecordAction recorder = new EventRecordAction(events, valueAccessors);
+            return Optional.of(recorder);
+        } else {
+            return Optional.empty();
+        }
+    }
+
     private List<IHookAction> buildActionCalls(List<ActionCallConfig> calls, MethodReflectionInformation methodInfo) {
 
         List<IHookAction> result = new ArrayList<>();
@@ -218,5 +258,6 @@ public class MethodHookGenerator {
         }
         return result;
     }
+
 
 }
