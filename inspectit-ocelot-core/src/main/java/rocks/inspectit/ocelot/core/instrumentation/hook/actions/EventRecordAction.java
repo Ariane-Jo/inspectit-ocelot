@@ -1,6 +1,7 @@
 package rocks.inspectit.ocelot.core.instrumentation.hook.actions;
 
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import rocks.inspectit.ocelot.config.model.instrumentation.rules.EventRecordingSettings;
 import rocks.inspectit.ocelot.core.instrumentation.hook.VariableAccessor;
 
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
  * THESIS-TAG: Added the class: Will be called whenever an event should be created. Execute should transform the event then along with the available data
  */
 
+@Slf4j
 @Value
 public class EventRecordAction implements IHookAction {
 
@@ -24,65 +26,100 @@ public class EventRecordAction implements IHookAction {
      * TODO: Transform Event to plain JSON for starters and log to console
      * TODO: Instrumentation is currently overwritten! Bad code. really bad code.
      */
+//    @Override
+//    public void execute(ExecutionContext context) {
+//        for(EventRecordingSettings event : events) {
+//            // Creating new event -- start
+//            Map<String, Object> result = new HashMap<>();
+//            result.put("event", event.getEvent());
+//            result.put("attributes", copy(event.getAttributes()));
+//
+//
+//            ArrayList<Map> mapList = new ArrayList();
+//            mapList.add( (Map) result.get("attributes"));
+//            // Iterating through every Map.
+//            while(!mapList.isEmpty()) {
+//                Map current = mapList.get(0);
+//                Set keysCurrent = current.keySet();
+//
+//                for(Object key : keysCurrent) {
+//                    Object value = current.get(key);
+//                    if(value instanceof Map) {
+//                        // If the keys resemble a list - the map will be replaced with a list
+//                        Map valueAsMap = (Map) value;
+//                        Set keysValueMap = valueAsMap.keySet();
+//                        boolean isList = isList(keysValueMap);
+//
+//                        if(isList) {
+//                            List listValues = new ArrayList(valueAsMap.values());
+//
+//                            // The values of the list have to be checked for being a map as well and either added to the list/ or the value replaced
+//                            for(Object dummy : new ArrayList(listValues)) {
+//                                if(dummy instanceof Map){
+//                                    mapList.add((Map) dummy);
+//                                } else {
+//                                    Object dataValue = getVariableValue(context, dummy.toString());
+//                                    if(dataValue != null) {
+//                                        listValues.remove(dummy);
+//                                        listValues.add(dataValue);
+//                                    }
+//                                }
+//                            }
+//                            current.replace(key, listValues);
+//                        } else {
+//                            //if it's not a list, the map will be added to the list
+//                            mapList.add(valueAsMap);
+//                        }
+//                    } else {
+//                        Object dataValue = getVariableValue(context, value.toString());
+//                        if(dataValue != null) {
+//                            current.replace(key, dataValue);
+//                        }
+//                    }
+//                }
+//
+//                mapList.remove(current);
+//            }
+//            System.out.println("Printing Event");
+//            System.out.println(result);
+//        }
+//    }
+
     @Override
     public void execute(ExecutionContext context) {
         for(EventRecordingSettings event : events) {
-            // Creating new event -- start
             Map<String, Object> result = new HashMap<>();
             result.put("event", event.getEvent());
-            result.put("attributes", copy(event.getAttributes()));
+            result.put("attributes", EventRecordingSettings.copy(event.getAttributes()));
+            ArrayList<Object> iteration = new ArrayList<>();
+            iteration.add(result.get("attributes"));
 
-
-            ArrayList<Map> mapList = new ArrayList();
-            mapList.add( (Map) result.get("attributes"));
-            // Iterating through every Map.
-            while(!mapList.isEmpty()) {
-                Map current = mapList.get(0);
-                Set keysCurrent = current.keySet();
-
-                for(Object key : keysCurrent) {
-                    Object value = current.get(key);
-                    if(value instanceof Map) {
-                        // If the keys resemble a list - the map will be replaced with a list
-                        Map valueAsMap = (Map) value;
-                        Set keysValueMap = valueAsMap.keySet();
-                        boolean isList = isList(keysValueMap);
-
-                        if(isList) {
-                            List listValues = new ArrayList(valueAsMap.values());
-
-                            // The values of the list have to be checked for being a map as well and either added to the list/ or the value replaced
-                            for(Object dummy : new ArrayList(listValues)) {
-                                if(dummy instanceof Map){
-                                    mapList.add((Map) dummy);
-                                } else {
-                                    // If it's not a map, it's a data value that should be added
-                                    VariableAccessor myAccessor = valueAccessors.get(dummy.toString());
-                                    Object accessorValue = myAccessor.get(context);
-
-                                    if(accessorValue != null) {
-                                        listValues.remove(dummy);
-                                        listValues.add(accessorValue);
-                                    }
-                                }
-                            }
-                            current.replace(key, listValues);
+            while (!iteration.isEmpty()) {
+                Object next = iteration.get(0);
+                if (isMap(next)) {
+                    Map nextAsMap = (Map) next;
+                    Set mapKeys = nextAsMap.keySet();
+                    for (Object key : mapKeys) {
+                        Object value = nextAsMap.get(key);
+                        if (isMap(value) || isList(value)) {
+                            iteration.add(value);
                         } else {
-                            //if it's not a list, the map will be added to the list
-                            mapList.add(valueAsMap);
+                            Object dataValue = getVariableValue(context, value.toString());
+                            replaceDataKeyWithValue(nextAsMap, key.toString(), dataValue);
                         }
-                    } else {
-                        // If it's not a map, it's a data value that should be added
-                        VariableAccessor myAccessor = valueAccessors.get(value.toString());
-                        Object accessorValue = myAccessor.get(context);
-
-                        if(accessorValue != null) {
-                            current.replace(key, accessorValue);
+                    }
+                } else if (isList(next)) {
+                    List nextAsList = (List) next;
+                    for (Object entry : new ArrayList<>(nextAsList)) {
+                        if (isMap(entry) || isList(entry)) {
+                            iteration.add(entry);
+                        } else {
+                            Object dataValue = getVariableValue(context, entry.toString());
+                            replaceDataKeyWithValue(nextAsList, entry.toString(), dataValue);
                         }
                     }
                 }
-
-                mapList.remove(current);
+                iteration.remove(next);
             }
             System.out.println("Printing Event");
             System.out.println(result);
@@ -94,10 +131,56 @@ public class EventRecordAction implements IHookAction {
         return "Event Recorder";
     }
 
+    /**
+     * Attempts to retrieve the value to a data key.
+     * Returns null if the data keys actual value is not set
+     * or no VariableAccessor has been created for this data key in {@link rocks.inspectit.ocelot.core.instrumentation.hook.MethodHookGenerator}.
+     *
+     * @param context : The Execution context of the current execute call.
+     * @param dataKey : The data key mentioned within the instrumentation and a VariableAccessor should be available.
+     * @return : The value to the coresponding data key or null.
+     */
+    private Object getVariableValue(ExecutionContext context, String dataKey) {
+        try {
+            VariableAccessor valueAccessor = valueAccessors.get(dataKey);
+            return valueAccessor.get(context);
+        } catch (NullPointerException ex){
+            log.error("No Accessor has been found for data key: " + dataKey);
+            return null;
+        }
+    }
+
+    private void replaceDataKeyWithValue(Object parent, String key, Object value){
+        if(value == null){
+            return;
+        }
+
+        if(parent instanceof Map) {
+            Map parentAsMap = (Map) parent;
+            parentAsMap.replace(key, value);
+        } else if (parent instanceof List) {
+            List parentAsList = (List) parent;
+            parentAsList.remove(key);
+            parentAsList.add(value);
+        }
+    }
+
+    private boolean isMap(Object obj) {
+        return  obj instanceof Map;
+    }
+
+    private boolean isList(Object obj) {
+        return obj instanceof List;
+    }
+
 
     /**
      * Bunch of functions I don't not yet they belong here
      * ________________________________________________________________________________________________________________
+     */
+
+    /**
+     *
      */
 
     /**

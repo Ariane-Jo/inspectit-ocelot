@@ -113,7 +113,8 @@ public class InstrumentationRuleResolver {
     Multiset<MetricRecordingSettings> resolveMetricRecordings(InstrumentationRuleSettings settings) {
         return settings.getMetrics().entrySet().stream()
                 .filter(e -> !StringUtils.isEmpty(e.getValue().getValue()))
-                .map(entry -> entry.getValue().copyWithDefaultMetricName(entry.getKey())) //use map key as default metric name
+//                .map(entry -> entry.getValue().copyWithDefaultEventName(entry.getKey())) //Version 1 TO DELETE
+                .map(entry -> entry.getValue().copyWithDefaultMetricName(entry.getKey()))
                 .collect(Collectors.toCollection(HashMultiset::create));
     }
 
@@ -122,7 +123,7 @@ public class InstrumentationRuleResolver {
      */
     private Set<EventRecordingSettings> resolveEventRecordings(InstrumentationRuleSettings settings) {
         return settings.getEvents().entrySet().stream()
-                .map(entry -> entry.getValue().copyWithDefaultEventName(entry.getKey()))
+                .map(entry -> entry.getValue().copyAndTransformWithDefaultName(entry.getKey()))
                 .collect(Collectors.toSet());
     }
 

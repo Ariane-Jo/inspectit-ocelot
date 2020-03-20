@@ -215,6 +215,41 @@ public class MethodHookGenerator {
      */
     private Optional<IHookAction> buildEventRecorder(MethodHookConfiguration config) {
         Collection<EventRecordingSettings> events = config.getEvents();
+        if(events.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Map<String, VariableAccessor> valueAccessors = new HashMap<>();
+        for(EventRecordingSettings event : events) {
+            ArrayList<Object> iteration = new ArrayList<>();
+            iteration.add(event.getAttributes());
+
+            while(!iteration.isEmpty()) {
+                Object next = iteration.get(0);
+                if(next instanceof Map) {
+                    Map nextAsMap = (Map) next;
+                    Collection nextValues = nextAsMap.values();
+                    for (Object entry : nextValues) {
+                        iteration.add(entry);
+                    }
+                } else if (next instanceof List) {
+                    List nextAsList = (List) next;
+                    for (Object entry : nextAsList) {
+                        iteration.add(entry);
+                    }
+                } else {
+                    VariableAccessor valueAccessor = variableAccessorFactory.getVariableAccessor(next.toString());
+                    valueAccessors.put(next.toString(), valueAccessor);
+                }
+                iteration.remove(next);
+            }
+        }
+        EventRecordAction recorder = new EventRecordAction(events, valueAccessors);
+        return Optional.of(recorder);
+    }
+
+    private Optional<IHookAction> buildEventRecorderV1(MethodHookConfiguration config) { // Version 1 TO DELETE
+        Collection<EventRecordingSettings> events = config.getEvents();
 
         if(!events.isEmpty()) {
             Map<String, VariableAccessor> valueAccessors = new HashMap<>();
