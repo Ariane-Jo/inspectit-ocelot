@@ -4,12 +4,13 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import rocks.inspectit.ocelot.config.model.instrumentation.rules.EventRecordingSettings;
 import rocks.inspectit.ocelot.core.instrumentation.hook.VariableAccessor;
-import rocks.inspectit.ocelot.sdk.events.EventExporter;
+import rocks.inspectit.ocelot.sdk.events.EventExporterService;
+import rocks.inspectit.ocelot.sdk.events.EventObject;
 
 import java.util.*;
 
 /**
- * THESIS-TAG: Added the class: Will be called whenever an event should be created. Execute should transform the event then along with the available data
+ * THESIS-TAG: Added this class: Will be called whenever an event should be created. Execute should transform the event then along with the available data
  */
 
 @Slf4j
@@ -20,7 +21,7 @@ public class EventRecordAction implements IHookAction {
 
     Map<String, VariableAccessor> valueAccessors;
 
-    EventExporter exporter = new EventExporter();
+    EventExporterService exporter = new EventExporterService();
 
     /**
      * TODO: Instrumentation could currently overwritten! Bad code. really bad code.
@@ -29,11 +30,12 @@ public class EventRecordAction implements IHookAction {
     @Override
     public void execute(ExecutionContext context) {
         for(EventRecordingSettings event : events) {
-            Map<String, Object> result = new HashMap<>();
-            result.put("event", event.getEvent());
-            result.put("attributes", EventRecordingSettings.copy(event.getAttributes()));
+            EventObject result = new EventObject();
+            result.setName(event.getEvent());
+            result.setAttributes((Map<String, Object>) EventRecordingSettings.copy(event.getAttributes()));
+
             ArrayList<Object> iteration = new ArrayList<>();
-            iteration.add(result.get("attributes"));
+            iteration.add(result.getAttributes());
 
             while (!iteration.isEmpty()) {
                 Object next = iteration.get(0);

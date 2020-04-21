@@ -78,7 +78,7 @@ public class InspectitConfig {
 
     /**
      * THESIS-TAG: Added Event Settings.
-     * TODO: Add events default config within config package - resources -> basics.yml default configuration
+     * TODO-THESIS: Add events default config within config package - resources -> basics.yml default configuration
      * General event settings.
      */
     private EventsSettings events = new EventsSettings();

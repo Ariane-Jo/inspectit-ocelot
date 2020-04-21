@@ -68,7 +68,7 @@ public class EventRecordingSettings {
      *
      * @return : Map of String/Object including Maps and Lists
      */
-    //TODO: allowing modifying since needed in eventrecordaction currently. would still be better of unmodifiable....
+    //TODO-THESIS: allowing modifying since needed in eventrecordaction currently. would still be better of unmodifiable....
     private Map<String, Object> transformedAttributes() {
         Map<String, Object> result = (Map) copy(attributes);
 

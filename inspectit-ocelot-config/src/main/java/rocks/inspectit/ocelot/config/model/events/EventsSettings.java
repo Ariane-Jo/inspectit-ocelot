@@ -16,12 +16,10 @@ public class EventsSettings {
 
     /**
      * Master switch for enabling event recording
-     * TODO-THESIS: If disabled
-     *  event recording
-     *  and all exporters should be disabled
      */
     private boolean enabled;
 
+    //Gotta do this within plugins!
     //TODO-THESIS: create XES exporter Class with enabled: true/false + hostAdress: some http path
 /**
  * It might be better to enhance the plugin system instead - and send the events through the plugins....
