@@ -35,6 +35,8 @@ public class EventExporterService {
         /** Creates a new timerTask for the scheduler only once. */
         if(timerTask == null){
             timerTask = scheduler.scheduleAtFixedRate(() -> export(), 5000, 5000, TimeUnit.MILLISECONDS);
+            scheduler.shutdown();
+
         }
     }
 
