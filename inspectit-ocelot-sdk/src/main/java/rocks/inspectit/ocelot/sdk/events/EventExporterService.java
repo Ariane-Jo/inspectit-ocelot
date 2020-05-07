@@ -35,8 +35,6 @@ public class EventExporterService {
         /** Creates a new timerTask for the scheduler only once. */
         if(timerTask == null){
             timerTask = scheduler.scheduleAtFixedRate(() -> export(), 5000, 5000, TimeUnit.MILLISECONDS);
-            scheduler.shutdown();
-
         }
     }
 
@@ -70,7 +68,7 @@ public class EventExporterService {
                 handler.export(eventQueue);
             } catch (Exception ex) {
                 String name = entry.getKey();
-                log.error("Event exporter handler '{}' threw an error while receiving events and will be removed.", name);
+                log.error("Event exporter handler " + name + " threw an error while receiving events and will be removed.", ex);
                 unregisterHandler(name);
             }
         }

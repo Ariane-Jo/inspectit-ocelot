@@ -7,7 +7,7 @@ import java.util.Map;
 @Data
 public class EventObject {
 
-    String name;
+    String event;
 
     Map<String, Object> attributes;
 }
