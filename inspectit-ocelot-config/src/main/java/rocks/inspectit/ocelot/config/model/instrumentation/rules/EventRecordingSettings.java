@@ -44,8 +44,6 @@ public class EventRecordingSettings {
     private Map<@NotBlank String, Object> attributes = Collections.emptyMap();
 
 
-    //private Map<String, Object> result;
-
     /**
      * Returns a new instance of EventRecordingSettings, copying the one which calls this function.
      * Sets the event prop, in case it is empty before.

@@ -71,12 +71,14 @@ public class InstrumentationConfiguration {
     @Builder(toBuilder = true)
     public InstrumentationConfiguration(Boolean metricsEnabled,
                                         Boolean tracingEnabled,
+                                        Boolean eventsEnabled,
                                         InstrumentationSettings source,
                                         PropagationMetaData propagationMetaData,
                                         TracingSettings tracingSettings,
                                         @Singular @Builder.ObtainVia(method = "getRules") Collection<InstrumentationRule> rules) {
         this.metricsEnabled = Optional.ofNullable(metricsEnabled).orElse(true);
         this.tracingEnabled = Optional.ofNullable(tracingEnabled).orElse(true);
+        this.eventsEnabled = Optional.ofNullable(eventsEnabled).orElse(true);
         this.source = source;
         this.propagationMetaData = propagationMetaData;
         this.tracingSettings = tracingSettings;

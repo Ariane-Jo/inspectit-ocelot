@@ -91,7 +91,7 @@ public class MethodHookGenerator {
             builder.exitActions(buildTracingExitActions(tracingSettings));
         }
         buildMetricsRecorder(config).ifPresent(builder::exitAction);
-        buildEventRecorder(config).isPresent(builder::exitAction);
+        buildEventRecorder(config).ifPresent(builder::exitAction);
         builder.exitActions(buildActionCalls(config.getPostExitActions(), methodInfo));
 
         return builder.build();
