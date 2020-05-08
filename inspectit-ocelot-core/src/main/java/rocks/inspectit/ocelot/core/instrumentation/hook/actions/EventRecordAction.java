@@ -32,7 +32,8 @@ public class EventRecordAction implements IHookAction {
     public void execute(ExecutionContext context) {
         for(EventRecordingSettings event : events) {
             EventObject result = new EventObject();
-            result.setName(event.getEvent());
+            result.setName(event.getName());
+            result.setTimestamp(event.getTimestamp());
             result.setAttributes((Map<String, Object>) EventRecordingSettings.copy(event.getAttributes()));
 
             ArrayList<Object> iteration = new ArrayList<>();

@@ -9,6 +9,7 @@ import org.springframework.util.StringUtils;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.*;
+import java.sql.Timestamp;
 import java.util.*;
 
 /**
@@ -26,7 +27,14 @@ public class EventRecordingSettings {
     /**
      * The Event name --> should be the key name in case of this field being empty
      */
-    private String event;
+    private String name;
+
+    /**
+     * Current timestamp.
+     */
+    @Builder.Default
+    private Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+
     /**
      * The Event attributes to be stored.
      * Valid objects can be arrays, nested and any //TODO: What is a possible value - add performValidation Funktion
@@ -34,7 +42,9 @@ public class EventRecordingSettings {
     @Builder.Default
     @NotNull
     private Map<@NotBlank String, Object> attributes = Collections.emptyMap();
-    private Map<String, Object> result;
+
+
+    //private Map<String, Object> result;
 
     /**
      * Returns a new instance of EventRecordingSettings, copying the one which calls this function.
@@ -46,20 +56,21 @@ public class EventRecordingSettings {
      */
     public EventRecordingSettings copyWithDefaultEventName(String defaultEventName) { //TO DELETE
         String eventName = getEventNameOrDefault(defaultEventName);
-        return toBuilder().event(eventName)
+        return toBuilder().name(eventName)
                 .attributes(attributes)
                 .build();
     }
 
     public EventRecordingSettings copyAndTransformWithDefaultName(String defaultEventName) {
         String eventName = getEventNameOrDefault(defaultEventName);
-        return toBuilder().event(eventName)
+        return toBuilder().name(eventName)
+                .timestamp(timestamp)
                 .attributes(transformedAttributes())
                 .build();
     }
 
     private String getEventNameOrDefault(String defaultEventName) {
-        return StringUtils.isEmpty(event) ? defaultEventName : event;
+        return StringUtils.isEmpty(name) ? defaultEventName : name;
     }
 
     /**
