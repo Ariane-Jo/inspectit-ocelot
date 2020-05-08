@@ -10,7 +10,7 @@ public class EventObject {
 
     String name;
 
-    Timestamp timestamp;
+    Long timestamp;
 
     Map<String, Object> attributes;
 }

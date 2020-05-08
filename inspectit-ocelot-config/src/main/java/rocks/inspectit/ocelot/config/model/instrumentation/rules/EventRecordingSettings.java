@@ -33,7 +33,7 @@ public class EventRecordingSettings {
      * Current timestamp.
      */
     @Builder.Default
-    private Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+    private Long timestamp = System.currentTimeMillis();
 
     /**
      * The Event attributes to be stored.

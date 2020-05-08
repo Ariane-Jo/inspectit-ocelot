@@ -222,6 +222,8 @@ public class MethodHookGenerator {
         Map<String, VariableAccessor> valueAccessors = new HashMap<>();
         for(EventRecordingSettings event : events) {
             ArrayList<Object> iteration = new ArrayList<>();
+            iteration.add(event.getName());
+            iteration.add(event.getTimestamp());
             iteration.add(event.getAttributes());
 
             while(!iteration.isEmpty()) {

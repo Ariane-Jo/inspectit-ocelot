@@ -32,8 +32,12 @@ public class EventRecordAction implements IHookAction {
     public void execute(ExecutionContext context) {
         for(EventRecordingSettings event : events) {
             EventObject result = new EventObject();
-            result.setName(event.getName());
-            result.setTimestamp(event.getTimestamp());
+
+            String nameValue = getVariableValue(context, event.getName()) instanceof String ? (String) getVariableValue(context, event.getName()) : event.getName();
+            Long timeValue = getVariableValue(context, event.getTimestamp().toString()) instanceof Long ? (Long) getVariableValue(context, event.getTimestamp().toString()) : event.getTimestamp();
+
+            result.setName(nameValue);
+            result.setTimestamp(timeValue);
             result.setAttributes((Map<String, Object>) EventRecordingSettings.copy(event.getAttributes()));
 
             ArrayList<Object> iteration = new ArrayList<>();
@@ -48,7 +52,7 @@ public class EventRecordAction implements IHookAction {
                         Object value = nextAsMap.get(key);
                         if (isMap(value) || isList(value)) {
                             iteration.add(value);
-                        } else if (value != null){
+                        } else {
                             Object dataValue = getVariableValue(context, value.toString());
                             replaceDataKeyWithValue(nextAsMap, key.toString(), dataValue);
                         }
@@ -58,7 +62,7 @@ public class EventRecordAction implements IHookAction {
                     for (Object entry : new ArrayList<>(nextAsList)) {
                         if (isMap(entry) || isList(entry)) {
                             iteration.add(entry);
-                        } else if (entry != null){
+                        } else {
                             Object dataValue = getVariableValue(context, entry.toString());
                             replaceDataKeyWithValue(nextAsList, entry.toString(), dataValue);
                         }
@@ -96,13 +100,14 @@ public class EventRecordAction implements IHookAction {
 
     private void replaceDataKeyWithValue(Object parent, String key, Object value){
         if(value == null){
-            if(parent instanceof Map) {
-                Map parentAsMap = (Map) parent;
-                parentAsMap.remove(key);
-            } else if (parent instanceof List) {
-                List parentAsList = (List) parent;
-                parentAsList.remove(key);
-            }
+            //TODO Deleting keys results in ConcurrentModifcationErrors.
+//            if(parent instanceof Map) {
+//                Map parentAsMap = (Map) parent;
+//                parentAsMap.remove(key);
+//            } else if (parent instanceof List) {
+//                List parentAsList = (List) parent;
+//                parentAsList.remove(key);
+//            }
             return;
         }
 
