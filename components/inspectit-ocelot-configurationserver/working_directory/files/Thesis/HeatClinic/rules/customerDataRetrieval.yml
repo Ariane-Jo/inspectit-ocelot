@@ -1,0 +1,57 @@
+inspectit:
+  instrumentation:
+    rules:
+    
+      # Basic customer obj and information like id and isAnonymous
+      'r_retrieveBasicCustomerInfo':
+        entry:
+          'customerObj': 
+            action: 'a_getCustomerObj'
+            
+          'customerId':
+            action: 'a_getCustomerId'
+            data-input:
+              'customer': 'customerObj' 
+          
+          'customerIsAnonymous':
+            action: 'a_getCustomerAnonymousState'
+            data-input:
+              'customer': 'customerObj'
+      
+      # Retrieves more customer info, if he is not anonymous
+      'r_retrieveAdvancedCustomerInfo':
+        include:
+          'r_retrieveBasicCustomerInfo': true
+          
+        entry:
+          'customerUsername':
+            only-if-false: 'customerIsAnonymous'
+            action: 'a_getCustomerUserName'
+            data-input:
+              'customer': 'customerObj'
+            
+          'customerName':
+            only-if-false: 'customerIsAnonymous'
+            action: 'a_getCustomerFirstName'
+            data-input:
+              'customer': 'customerObj'
+          
+          'customerSurname':
+            only-if-false: 'customerIsAnonymous'
+            action: 'a_getCustomerLastName'
+            data-input:
+              'customer': 'customerObj'
+              
+          'customerIsRegistered':
+            only-if-false: 'customerIsAnonymous'
+            action: 'a_getCustomerRegistryState'
+            data-input:
+              'customer': 'customerObj'
+              
+          'customerIsLoggedIn':
+            only-if-false: 'customerIsAnonymous'
+            action: 'a_getCustomerLoginState'
+            data-input:
+              'customer': 'customerObj'
+          
+          

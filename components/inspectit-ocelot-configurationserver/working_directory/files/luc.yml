@@ -1,0 +1,53 @@
+inspectit:
+  metrics:
+    definition:
+      
+      # Metric eigendefinition bzw. neudefinition, falls default überschrieben wird
+      '[blubname]':
+        unit: ms
+        description: 'blub'
+        views:
+          '[noch mehr Namen]':
+            aggregation: SUM
+            tags:
+              'foo' : 'bar' # <--- Vorbereitung, damit man einen Tag names foo überhaupt anhängen kann
+    
+  instrumentation:
+    data:
+      'foo': # <--- Propagieren, falls der Wert von Foo nicht dort gesetzt wird, wo er angehängt wird (variable name)
+        up-propagation: GLOBAL
+        down-propagation: GLOBAL
+        
+    scopes:
+      # Scope/Methodenaufruf(e) Definition in denen foo gesetzt wird
+      's_blubname':
+        #...
+    
+    actions:
+      # Action Definition mit der foo gesetzt wird. 
+     
+    rules:
+      'r_blubname':
+        scopes:
+          's_blubname': true # <- scope auswählen
+        
+        # die vier zeilen hier setzten den Wert von foo  
+        entry:   
+          'foo': 
+            action: 'set'  # <-- fiy: default-action aus Ocelot defaults/instrumentation/commons/common-actions.yml
+            constant-input:
+                value: 'foo'
+        
+        # ab hier werden der metric/trace der tag zugeweist. Kann unabhängig vom setzten des wertes sein, da wir propagieren    
+        metrics:
+          '[blubname]': # <-- die metric von ganz oben bekommt einen wert
+            value: 1  
+            data-tags:
+              'foo': 'foo'  # <-- tagName: variablenName <-- Wertzuweisung wenn foo eine variable ist
+            #constant-tags:
+              #'foo': 'bar' #   <-- da foo eine konstante ist, kann man sich hier alternativ den Spaß bei den scopes/action/propagation/entry sparen und es direkt setzten
+             
+             
+        tracing:
+          attributes:
+            'foo': 'foo' # <- referenziert die variable

@@ -1,0 +1,200 @@
+inspectit:
+  instrumentation:
+    actions:
+
+# Product data extraction actions    
+      # Can extract the product from BroadleafCartController/add & remove
+      'a_getProductFromCart': 
+        imports:
+          - 'java.lang.reflect'
+          - 'org.broadleafcommerce.core.order.service.call.OrderItemRequestDTO'
+          - 'org.broadleafcommerce.core.web.controller.cart'
+          - 'org.broadleafcommerce.core.catalog.domain'
+          - 'org.broadleafcommerce.core.catalog.service'
+        input:
+          _this: 'BroadleafCartController'
+          _arg3: 'OrderItemRequestDTO'
+        value-body: |
+          Class clazz = _this.getClass().getSuperclass().getSuperclass();
+          Field catalogServiceField = clazz.getDeclaredField("catalogService");
+          catalogServiceField.setAccessible(true);
+
+          CatalogService cService = catalogServiceField.get(_this);
+          return (Product)cService.findProductById(_arg3.getProductId());
+          
+      # Function to retrieve ?? non standard attributes ?? 
+      # Mapping has only "heatRange" when sauce and none when merchandise
+      'a_getProductAttribute':
+        imports:
+          - org.broadleafcommerce.core.catalog.domain
+          - java.util
+        input:
+          product: Product
+          name: String
+        value-body: |
+          if(product != null) {
+            Map map = product.getProductAttributes();
+            
+            //for(Map.Entry<String, Object> entry : map.entrySet()){
+              //System.out.println(entry.getKey() + " : " + entry.getValue());
+            //};
+            
+            ProductAttribute res = (ProductAttribute)map.get(name);
+            if(res != null) {
+              return res.getValue();
+            }
+            return res;
+          }
+          return null;
+          
+      # Function to retrieve atts out of OrderItemRequestDTO
+      # Mapping has no value when sauce and "COLOR" and "SIZE" when Merchandise
+      'a_getDTOItemAttribute':
+        imports:
+          - 'java.util'
+        input:
+          _arg3: OrderItemRequestDTO
+          name: String
+        value-body: |
+          Map<String, String> itemAtts = _arg3.getItemAttributes();
+          String res = itemAtts.get(name);
+          return res;
+          
+      # Functions found in org.broadleafcommerce.core.catalog.domain.Product
+      'a_getProductId':
+        imports: 
+         - 'java.lang.Long'
+         - 'org.broadleafcommerce.core.catalog.domain'
+        input:
+          'product': 'Product'
+        value-body: |
+          if(product != null) {
+            Long res = product.getId();
+            return res;
+          }
+          return null;
+      
+      'a_getProductName':
+        imports: 
+         - 'org.broadleafcommerce.core.catalog.domain'
+        input:
+          'product': 'Product'
+        value-body: |
+          if(product != null) {
+            String res = product.getName();
+            return res;
+          }
+          return null;
+          
+      'a_getProductDescription':
+        imports: 
+         - 'org.broadleafcommerce.core.catalog.domain'
+        input:
+          'product': 'Product'
+        value-body: |
+          if(product != null) {
+            String res = product.getDescription();
+            return res;
+          }
+          return null;
+          
+      'a_getProductCategory':
+        imports: 
+         - 'org.broadleafcommerce.core.catalog.domain'
+        input:
+          'product': 'Product'
+        value-body: |
+          if(product != null) {
+            Category ctg = product.getCategory();
+            String res = ctg.getName();
+            return res;
+          }
+          return null;
+          
+      'a_getProductManufacturer':
+        imports: 
+         - 'org.broadleafcommerce.core.catalog.domain'
+        input:
+          'product': 'Product'
+        value-body: |
+          if(product != null) {
+            String res = product.getManufacturer();
+            return res;
+          }
+          return null;
+          
+# Sku data extraction actions <--- do not work as _arg3.getSkuId() is null... where do I get the price then?   
+      
+      # Retrieves default sku from a product
+      'a_getDefaultSku':
+        imports:
+          - 'org.broadleafcommerce.core.catalog.domain'
+        input:
+          'product': 'Product'
+        value-body: |
+          Sku res = product.getDefaultSku();
+          return res;
+
+      # Should be called within BroadleafCartController add or remove method
+      # No use for HeatClinic, as skuId will not be set
+      'a_getSkuFromCart': 
+        imports:
+          - 'java.lang.reflect'
+          - 'org.broadleafcommerce.core.order.service.call.OrderItemRequestDTO'
+          - 'org.broadleafcommerce.core.web.controller.cart'
+          - 'org.broadleafcommerce.core.catalog.domain'
+          - 'org.broadleafcommerce.core.catalog.service'
+        input:
+          _this: 'BroadleafCartController'
+          _arg3: 'OrderItemRequestDTO'
+        value-body: |
+          Class clazz = _this.getClass().getSuperclass().getSuperclass();
+          Field catalogServiceField = clazz.getDeclaredField("catalogService");
+          catalogServiceField.setAccessible(true);
+
+          CatalogService cService = catalogServiceField.get(_this);
+          Long id = _arg3.getSkuId();
+          if(id != null) {
+            return (Sku)cService.findSkuById(id);
+          }
+          return null;
+          
+      'a_getSkuId':
+        imports:
+          - 'java.lang.Long'
+          - 'org.broadleafcommerce.core.catalog.domain'
+        input:
+          'sku': 'Sku'
+        value-body: |
+          if(sku != null) {
+            Long res = sku.getId();
+            return res;
+          }
+          return null;
+          
+      'a_getSkuPrice':
+        imports:
+          - 'org.broadleafcommerce.core.catalog.domain'
+          - 'org.broadleafcommerce.common.money'
+        input:
+          'sku': 'Sku'
+        value-body: |
+          if(sku != null) {
+            Money penny = sku.getPrice();
+            String res = penny.toString();
+            return res;
+          }
+          return null;
+          
+      'a_getSkuCurrency':
+        imports:
+          - 'org.broadleafcommerce.core.catalog.domain'
+        input:
+          'sku': 'Sku'
+        value-body: |
+          if(sku != null) {
+            BroadleafCurrency currency = sku.getCurrency();
+            String res = currency.getCurrencyCode();
+            return res;
+          }
+          return null;

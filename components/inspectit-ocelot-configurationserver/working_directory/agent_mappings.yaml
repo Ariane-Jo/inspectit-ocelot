@@ -1,0 +1,14 @@
+- name: "HeatClinic"
+  sources:
+  - "/Thesis"
+  attributes:
+    service: "HeatClinic.*"
+- name: "HelloWorldMapping"
+  sources:
+  - "/helloWorldDemo.yml"
+  attributes:
+    service: "helloWorld-demo"
+- name: "Default Mapping"
+  sources: []
+  attributes:
+    service: ".*"

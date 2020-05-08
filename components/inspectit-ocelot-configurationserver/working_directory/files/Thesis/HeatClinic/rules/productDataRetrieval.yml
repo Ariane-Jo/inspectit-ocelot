@@ -1,0 +1,79 @@
+inspectit:
+  instrumentation:
+    rules:
+      
+      # Rule to extract the product information from BroadleafCartController/add & remove methods
+      'r_retrieveDefaultProductInformationFromCart':
+        entry:
+          'productObj':
+            action: 'a_getProductFromCart'
+          
+          'productId':
+            action: 'a_getProductId'
+            data-input: 
+              'product': 'productObj'
+            
+          'productName':
+            action: 'a_getProductName'
+            data-input: 
+              'product': 'productObj'
+              
+          'productDescription':
+            action: 'a_getProductDescription'
+            data-input: 
+              'product': 'productObj'
+              
+          'productCategory':
+            action: 'a_getProductCategory'
+            data-input: 
+              'product': 'productObj'
+              
+          'productManufacturer':
+            action: 'a_getProductManufacturer'
+            data-input: 
+              'product': 'productObj'
+              
+          'skuObj':
+            action: 'a_getDefaultSku'
+            data-input:
+              'product': 'productObj'
+            
+          'skuId':
+            action: 'a_getSkuId'
+            data-input: 
+              'sku': 'skuObj' 
+              
+          'skuPrice':
+            action: 'a_getSkuPrice'
+            data-input: 
+              'sku': 'skuObj' 
+              
+          'skuCurrency':
+            action: 'a_getSkuCurrency'
+            data-input: 
+              'sku': 'skuObj' 
+        
+      # Rule to extract the specific heatclinic product information from BroadleafCartController/add & remove methods  
+      'r_retrieveHeatClinicProductInformationFromCart':
+        include:
+          'r_retrieveDefaultProductInformationFromCart': true
+        entry:
+          'productSauceHeatRange':
+            action: 'a_getProductAttribute'
+            data-input:
+              'product': 'productObj'
+            constant-input:
+              'name': 'heatRange'
+          
+          'productShirtColor':
+            action: 'a_getDTOItemAttribute'
+            constant-input:
+              'name': 'COLOR'
+              
+          'productShirtSize':
+            action: 'a_getDTOItemAttribute'
+            constant-input:
+              'name': 'SIZE'
+        
+        
+              

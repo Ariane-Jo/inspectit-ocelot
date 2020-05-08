@@ -1,0 +1,97 @@
+inspectit:
+  instrumentation:
+    actions:
+      
+      # Extracts and returns the current customer object; Can be used whenever
+      'a_getCustomerObj':
+        imports: 
+         - 'org.broadleafcommerce.profile.web.core.CustomerState'
+         - 'org.broadleafcommerce.profile.core.domain.Customer'
+        value: "CustomerState.getCustomer()"
+      
+      # Functions found in org.broadleafcommerce.profile.core.domain.Customer
+      'a_getCustomerId':
+        imports: 
+         - 'org.broadleafcommerce.profile.core.domain.Customer'
+        input:
+          'customer': 'Customer'
+        value-body: |
+          if(customer != null) {
+            Long res = customer.getId();
+            return res;
+          }
+          return null;
+          
+      'a_getCustomerUserName':
+        imports: 
+         - 'org.broadleafcommerce.profile.core.domain.Customer'
+        input:
+          'customer': 'Customer'
+        value-body: |
+          if(customer != null) {
+            String res = customer.getUsername();
+            return res;
+          }
+          return null;
+          
+      'a_getCustomerFirstName':
+        imports: 
+         - 'org.broadleafcommerce.profile.core.domain.Customer'
+        input:
+          'customer': 'Customer'
+        value-body: |
+          if(customer != null) {
+            String res = customer.getFirstName();
+            return res;
+          }
+          return null;
+      
+      'a_getCustomerLastName':
+        imports: 
+         - 'org.broadleafcommerce.profile.core.domain.Customer'
+        input:
+          'customer': 'Customer'
+        value-body: |
+          if(customer != null) {
+            String res = customer.getLastName();
+            return res;
+          }
+          return null;
+      
+      'a_getCustomerRegistryState':
+        imports:
+          - 'org.broadleafcommerce.profile.core.domain.Customer'
+        input:
+          'customer': 'Customer'
+        value-body: |
+          if(customer != null) {
+            return new Boolean(customer.isRegistered());
+          }
+          return null;
+          
+      'a_getCustomerLoginState':
+        imports:
+          - 'org.broadleafcommerce.profile.core.domain.Customer'
+        input:
+          'customer': 'Customer'
+        value-body: |
+          if(customer != null) {
+            return new Boolean(customer.isLoggedIn());
+          }
+          return null;
+      
+      'a_getCustomerAnonymousState':
+        imports: 
+         - 'org.broadleafcommerce.profile.core.domain.Customer'
+        input:
+          'customer': 'Customer'
+        value-body: |
+          if(customer != null) {
+            return new Boolean(customer.isAnonymous());
+          }
+          return null;
+        
+      
+    
+    
+  

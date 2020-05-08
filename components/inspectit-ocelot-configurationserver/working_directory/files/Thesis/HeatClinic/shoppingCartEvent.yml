@@ -1,0 +1,64 @@
+inspectit:
+  instrumentation:
+    scopes:
+      
+      's_itemToCart': 
+        type:
+          name: 'org.broadleafcommerce.core.web.controller.cart.BroadleafCartController'
+        methods:
+          - name: 'add'
+          
+      's_itemRemoveFromCart': 
+        type:
+          name: 'org.broadleafcommerce.core.web.controller.cart.BroadleafCartController'
+        methods:
+          - name: 'remove'
+    
+    actions:
+      'a_getEventNameForCart':
+        input:
+          _methodName: String
+        value-body: |
+          System.out.println(_methodName);
+          String res = _methodName + "-ItemShoppingCartEvent";
+          return res;
+    
+    rules:
+      
+      'r_cartAddOrRemove':
+        include:
+          'r_retrieveAdvancedCustomerInfo': true
+          'r_retrieveHeatClinicProductInformationFromCart': true
+          
+        scopes:
+          's_itemToCart': true
+          's_itemRemoveFromCart': true
+          
+        events:
+          'addRemoveShoppingCartEvent':
+            name: 'eventName'
+            attributes:
+              'product':
+                # General Broadleaf framework
+                'id': 'productId'
+                'name': 'productName'
+                'description': 'productDescription'
+                'category': 'productCategory'
+                'manufacturer': 'productManufacturer'
+                #'sku-id': 'skuId'
+                'price': 'skuPrice'
+                'currency': 'skuCurrency'
+                # HeatClinic specific
+                'heatRange': 'productHeatRange'
+                'color': 'productShirtColor'
+                'size': 'productShirtSize'
+              'customer':
+                'id': 'customerId'
+                'isAnonymous': 'customerIsAnonymous'
+
+        entry:
+          'eventName':
+            action: 'a_getEventNameForCart'
+    
+              
+        

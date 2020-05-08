@@ -1,0 +1,112 @@
+inspectit:
+  service-name: "thesis-demo"
+  
+  plugins:
+    elastic-event:
+      service-name: elastic-event-exporter
+      host: 192.168.99.100
+      port: 9200
+      protocol: http
+      index: helloworld-events
+  
+  config:
+    http:
+      frequency: 15s
+      attributes:
+        key: value
+      
+  logging:
+    debug: true
+    
+    
+    
+    
+  events:
+    enabled: true
+  
+  instrumentation:
+    data:
+      dummyEoi: {down-propagation: NONE, is-tag: false}
+      dummyEss: {down-propagation: NONE, is-tag: false}
+      executionOrder: {up-propagation: GLOBAL, down-propagation: GLOBAL, is-tag: false}
+      stackDepth: {down-propagation: GLOBAL, is-tag: false}
+  
+    actions:  
+      increase_value_by_one:
+        input:
+          current: Integer
+        value-body: |
+          if(current == null) {
+            return new Integer(0);
+          }
+          return Integer.valueOf(current.intValue() + 1);
+      console_log:
+        input:
+          string: String
+        value-body: |
+          System.out.println(string);
+          return string;
+  
+    scopes:
+      my_method:
+        type: 
+          name: "greeter"
+          matcher-mode: "CONTAINS_IGNORE_CASE"
+        methods:
+        - name: "hello"
+          matcher-mode: "CONTAINS_IGNORE_CASE"
+    
+    rules:
+      my_rule:
+        scopes: 
+          my_method: true
+        events:
+          eventOne: 
+            attributes: 
+              data1: 
+                - blub
+              data: 
+                - dummyEss
+                - dummyEoi
+            
+          eventTwo:
+            attributes:
+              other:
+                eoi: executionOrder
+                ssd: stackDepth
+              other2:
+                eoi: 
+                  data: myData
+        
+        metrics:
+          '[method/duration]':
+            value: blubbub
+          
+        tracing:
+            start-span: true
+            attributes:
+              eoi: dummyEoi
+              ess: dummyEss
+        entry:
+          dummyEoi:
+            action: set
+            data-input:
+              value: executionOrder
+              #value: stackDepth
+          dummyEss:
+            action: set
+            data-input:
+              value: stackDepth
+          executionOrder: 
+            action: increase_value_by_one
+            data-input:
+              current: executionOrder
+          stackDepth:
+            action: increase_value_by_one
+            data-input:
+              current: stackDepth
+          mydata:
+            action: console_log
+            constant-input:
+              string: "------------Hallo"
+

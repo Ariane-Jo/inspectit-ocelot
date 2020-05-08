@@ -1,0 +1,9 @@
+inspectit:
+  
+  config:
+    http:
+      frequency: 10s
+      
+  events:
+    enabled: true
+    

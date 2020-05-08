@@ -1,0 +1,27 @@
+inspectit:
+  instrumentation:
+    actions:
+      'a_getSkuFromCart': 
+        imports:
+          - 'java.lang.reflect'
+          - 'org.broadleafcommerce.core.order.service.call.OrderItemRequestDTO'
+          - 'org.broadleafcommerce.core.web.controller.cart'
+          - 'org.broadleafcommerce.core.catalog.domain'
+          - 'org.broadleafcommerce.core.catalog.service'
+        input:
+          _this: 'BroadleafCartController'
+          _arg3: 'OrderItemRequestDTO'
+        value-body: |
+          Class clazz = _this.getClass().getSuperclass().getSuperclass();
+          Field catalogServiceField = clazz.getDeclaredField("catalogService");
+          catalogServiceField.setAccessible(true);
+
+          CatalogService cService = catalogServiceField.get(_this);
+          System.out.println("sku id bei a_getSkuFromCart " + _arg3.getSkuId());
+          System.out.println("prod id bei a_getSkuFromCart " + _arg3.getProductId());
+          System.out.println("categ id bei a_getSkuFromCart " + _arg3.getCategoryId());
+          System.out.println("atts id bei a_getSkuFromCart " + _arg3.getItemAttributes()); 
+          System.out.println(cService.findAllSkus());
+          
+          //return (Sku)cService.findSkuById(_arg3.getSkuId());
+          return null;

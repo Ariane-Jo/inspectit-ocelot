@@ -1,0 +1,16 @@
+inspectit:
+    
+  plugins:
+    #path: To be set with environment variables. Won't be loaded otherwise.
+    # console-exporter: C:\Users\ark\Documents\Repositories\inspectit-ocelot-plugins\console-event-exporter\build\libs
+    # elastic-exporter: C:\Users\ark\Documents\Repositories\inspectit-ocelot-plugins\elastic-event-exporter\build\libs
+    
+    #console-event:
+      #enabled: true
+      #service-name: "Console Event Exporter Plugin"
+      
+    elastic-event:
+      service-name: elastic-event-exporter
+      host: 192.168.99.100
+      port: 9200
+      index: heatclinic-event # only lowercase letters!
