@@ -9,12 +9,14 @@ import net.bytebuddy.description.method.MethodDescription;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import rocks.inspectit.ocelot.config.model.instrumentation.rules.EventRecordingSettings;
 import rocks.inspectit.ocelot.config.model.instrumentation.rules.MetricRecordingSettings;
 import rocks.inspectit.ocelot.config.model.instrumentation.rules.RuleTracingSettings;
 import rocks.inspectit.ocelot.core.instrumentation.config.model.ActionCallConfig;
 import rocks.inspectit.ocelot.core.instrumentation.config.model.MethodHookConfiguration;
 import rocks.inspectit.ocelot.core.instrumentation.context.ContextManager;
 import rocks.inspectit.ocelot.core.instrumentation.hook.actions.ConditionalHookAction;
+import rocks.inspectit.ocelot.core.instrumentation.hook.actions.EventsRecorder;
 import rocks.inspectit.ocelot.core.instrumentation.hook.actions.IHookAction;
 import rocks.inspectit.ocelot.core.instrumentation.hook.actions.MetricsRecorder;
 import rocks.inspectit.ocelot.core.instrumentation.hook.actions.model.MetricAccessor;
@@ -88,6 +90,7 @@ public class MethodHookGenerator {
             builder.exitActions(buildTracingExitActions(tracingSettings));
         }
         buildMetricsRecorder(config).ifPresent(builder::exitAction);
+        buildEventRecorder(config).ifPresent(builder::exitAction);
         builder.exitActions(buildActionCalls(config.getPostExitActions(), methodInfo));
 
         return builder.build();
@@ -203,6 +206,42 @@ public class MethodHookGenerator {
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> variableAccessorFactory.getVariableAccessor(entry.getValue())));
 
         return new MetricAccessor(metricSettings.getMetric(), valueAccessor, metricSettings.getConstantTags(), tagAccessors);
+    }
+
+    private Optional<IHookAction> buildEventRecorder(MethodHookConfiguration config) {
+        Collection<EventRecordingSettings> events = config.getEvents();
+        if(events.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Map<String, VariableAccessor> valueAccessors = new HashMap<>();
+        for(EventRecordingSettings event : events) {
+            ArrayList<Object> iteration = new ArrayList<>();
+            iteration.add(event.getName());
+            iteration.add(event.getAttributes());
+
+            while(!iteration.isEmpty()) {
+                Object next = iteration.get(0);
+                if(next instanceof Map) {
+                    Map nextAsMap = (Map) next;
+                    Collection nextValues = nextAsMap.values();
+                    for (Object entry : nextValues) {
+                        iteration.add(entry);
+                    }
+                } else if (next instanceof List) {
+                    List nextAsList = (List) next;
+                    for (Object entry : nextAsList) {
+                        iteration.add(entry);
+                    }
+                } else {
+                    VariableAccessor valueAccessor = variableAccessorFactory.getVariableAccessor(next.toString());
+                    valueAccessors.put(next.toString(), valueAccessor);
+                }
+                iteration.remove(next);
+            }
+        }
+        EventsRecorder recorder = new EventsRecorder(events, valueAccessors);
+        return Optional.of(recorder);
     }
 
     private List<IHookAction> buildActionCalls(List<ActionCallConfig> calls, MethodReflectionInformation methodInfo) {
