@@ -7,9 +7,12 @@ import rocks.inspectit.ocelot.config.model.InspectitConfig;
 import rocks.inspectit.ocelot.config.model.events.EventSettings;
 import rocks.inspectit.ocelot.core.service.DynamicallyActivatableService;
 import rocks.inspectit.ocelot.sdk.events.Event;
+import rocks.inspectit.ocelot.sdk.events.EventRegistryService;
+import rocks.inspectit.ocelot.sdk.events.OcelotEventPluginHandler;
 
 import javax.validation.Valid;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -19,10 +22,12 @@ import java.util.concurrent.TimeUnit;
 public class EventExporterService extends DynamicallyActivatableService {
 
     /** The queue which stores the event objects to be send. */
-    private static Queue<Event> eventQueue = new LinkedList<>();
+    private Queue<Event> eventQueue = new LinkedList<>();
 
     @Autowired
     private ScheduledExecutorService executor;
+
+    private EventRegistryService registryService = new EventRegistryService();
 
     public EventExporterService() {
         super("events");
@@ -69,7 +74,7 @@ public class EventExporterService extends DynamicallyActivatableService {
         if(eventQueue.isEmpty()){
             return;
         }
-        // Calling handlers to export events
+        registryService.sendEventsToExporters(eventQueue);
         eventQueue.clear();
     }
 }
