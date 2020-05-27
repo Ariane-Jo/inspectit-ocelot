@@ -72,7 +72,11 @@ public class EventRecorder implements IHookAction{
 
         try {
             VariableAccessor valueAccessor = eventAccessor.getVariableAccessors().get(dataKey);
-            return (String) valueAccessor.get(context);
+            Object value = valueAccessor.get(context);
+            if(value != null) {
+                return (String) value;
+            }
+            return dataKey;
         } catch (Throwable t){
             if(eventAccessor.getConstantTags().containsKey(dataKey)) {
                 return eventAccessor.getConstantTags().get(dataKey);
