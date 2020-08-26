@@ -8,24 +8,26 @@ import rocks.inspectit.ocelot.config.model.events.EventSettings;
 import rocks.inspectit.ocelot.core.service.DynamicallyActivatableService;
 import rocks.inspectit.ocelot.sdk.events.Event;
 import rocks.inspectit.ocelot.sdk.events.EventRegistryService;
-import rocks.inspectit.ocelot.sdk.events.OcelotEventPluginHandler;
 
 import javax.validation.Valid;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Queue;
+import java.util.ArrayList;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
-public class EventExporterService extends DynamicallyActivatableService {
+public class EventExporterService  extends DynamicallyActivatableService {
 
     /** The queue which stores the event objects to be send. */
-    private Queue<Event> eventQueue = new LinkedList<>();
+    private static ArrayList<Event> eventQueue = new ArrayList<Event>();
 
+    /** The scheduler for periodically send the stored events within eventQueue towards registered exporters. */
     @Autowired
     private ScheduledExecutorService executor;
+
+    /** The future for the scheduled task. Will be closed during doDisable instead of calling executor.shudown(). */
+    private ScheduledFuture<?> schedule;
 
     private EventRegistryService registryService = new EventRegistryService();
 
@@ -33,48 +35,72 @@ public class EventExporterService extends DynamicallyActivatableService {
         super("events");
     }
 
-    @Override
-    protected boolean checkEnabledForConfig(InspectitConfig conf) {
-        @Valid EventSettings settings = conf.getEvents();
-        return settings.isEnabled()
-                && settings.getFrequency() != null;
-    }
-
-    @Override
-    protected boolean doEnable(InspectitConfig conf) {
-        log.info("Starting EventExporter Service");
-        try {
-            EventSettings settings = conf.getEvents();
-            executor.scheduleAtFixedRate(
-                    () -> sendToHandlers(),
-                    settings.getFrequency().getSeconds(),
-                    settings.getFrequency().getSeconds(),
-                    TimeUnit.SECONDS);
-            return true;
-        } catch (Throwable t) {
-            log.error("EventExporter Service could not be started.", t);
-            return false;
-        }
-    }
-
-    @Override
-    protected boolean doDisable() {
-        log.info("Shuttding down EventExporter Service.");
-        executor.shutdownNow();
-        return true;
-    }
-
+    /**
+     * Function called by {EventRecorder} in order to send Events.
+     * @param eventObj - An Event which should be send towards exporters.
+     */
     public void export(Event eventObj) {
-        if(eventObj != null && !executor.isShutdown()) {
+        if(eventObj != null && !schedule.isCancelled()) {
             eventQueue.add(eventObj);
         }
     }
 
     private void sendToHandlers() {
-        if(eventQueue.isEmpty()){
+        if(eventQueue.isEmpty()) {
             return;
         }
         registryService.sendEventsToExporters(eventQueue);
         eventQueue.clear();
+    }
+
+    @Override
+    protected boolean checkEnabledForConfig(InspectitConfig configuration) {
+        @Valid EventSettings settings = configuration.getEvents();
+        return settings.isEnabled()
+                && settings.getFrequency() != null;
+    }
+
+    @Override
+    protected boolean doEnable(InspectitConfig configuration) {
+        log.info("Starting EventExporter Service");
+        try {
+            EventSettings settings = configuration.getEvents();
+            /**
+             * Alternative:
+             * if(executor not undefined){
+             *     executor = new ScheduledExecutorService();
+             *     executor.scheduleAtFixesRate(....);
+             * }
+             */
+            schedule = executor.scheduleAtFixedRate(
+                    () -> sendToHandlers(),
+                    settings.getFrequency().getNano(),
+                    settings.getFrequency().getNano(),
+                    TimeUnit.NANOSECONDS
+            );
+        } catch (Throwable t) {
+            log.error("EventExporter Service could not be started.", t);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    protected boolean doDisable() {
+        log.info("Shutting down EventExporter Service.");
+
+        if(schedule.cancel(false)) {
+            return true;
+        }
+
+        /**
+         * Alternative:
+         * try{
+         *     executor.shutdown()
+         * }
+         */
+
+        log.error("Shutting down EventExporter Service failed.");
+        return false;
     }
 }
